@@ -1,0 +1,107 @@
+[
+  {
+    "step": "Admin login",
+    "ok": true,
+    "detail": "https://vidya-school-web-app.vercel.app/admin"
+  },
+  {
+    "step": "Admin page /admin",
+    "ok": true,
+    "detail": "Vidya Bus Overview Students Parents Drivers Buses Routes Assignments Live Tracking Reports Notifications Settings CONNECTED CARE Every journey, clearly in view. System Admin AD"
+  },
+  {
+    "step": "Admin page /admin/buses",
+    "ok": true,
+    "detail": "Vidya Bus Overview Students Parents Drivers Buses Routes Assignments Live Tracking Reports Notifications Settings CONNECTED CARE Every journey, clearly in view. System Admin AD"
+  },
+  {
+    "step": "Admin page /admin/routes",
+    "ok": true,
+    "detail": "Vidya Bus Overview Students Parents Drivers Buses Routes Assignments Live Tracking Reports Notifications Settings CONNECTED CARE Every journey, clearly in view. System Admin AD"
+  },
+  {
+    "step": "Admin page /admin/drivers",
+    "ok": false,
+    "detail": "Vidya Bus Overview Students Parents Drivers Buses Routes Assignments Live Tracking Reports Notifications Settings CONNECTED CARE Every journey, clearly in view. System Admin AD"
+  },
+  {
+    "step": "Admin page /admin/students",
+    "ok": false,
+    "detail": "Vidya Bus Overview Students Parents Drivers Buses Routes Assignments Live Tracking Reports Notifications Settings CONNECTED CARE Every journey, clearly in view. System Admin AD"
+  },
+  {
+    "step": "Admin page /admin/parents",
+    "ok": false,
+    "detail": "Vidya Bus Overview Students Parents Drivers Buses Routes Assignments Live Tracking Reports Notifications Settings CONNECTED CARE Every journey, clearly in view. System Admin AD"
+  },
+  {
+    "step": "Admin page /admin/assignments",
+    "ok": true,
+    "detail": "Vidya Bus Overview Students Parents Drivers Buses Routes Assignments Live Tracking Reports Notifications Settings CONNECTED CARE Every journey, clearly in view. System Admin AD"
+  },
+  {
+    "step": "Admin page /admin/reports",
+    "ok": true,
+    "detail": "Vidya Bus Overview Students Parents Drivers Buses Routes Assignments Live Tracking Reports Notifications Settings CONNECTED CARE Every journey, clearly in view. System Admin AD"
+  },
+  {
+    "step": "Driver login",
+    "ok": true,
+    "detail": "https://vidya-school-web-app.vercel.app/driver"
+  },
+  {
+    "step": "Driver page /driver",
+    "ok": true,
+    "detail": "Vidya Bus Dashboard My Route Today's Students Trip Control Trip History Profile CONNECTED CARE Every journey, clearly in view. Ravi Kumar DRIVER RK DRIVER WORKSPACE Ready fo"
+  },
+  {
+    "step": "Driver page /driver/trip",
+    "ok": false,
+    "detail": "Vidya Bus Dashboard My Route Today's Students Trip Control Trip History Profile CONNECTED CARE Every journey, clearly in view. Ravi Kumar DRIVER RK LIVE OPERATIONS Trip cont"
+  },
+  {
+    "step": "Driver page /driver/students",
+    "ok": false,
+    "detail": "Vidya Bus Dashboard My Route Today's Students Trip Control Trip History Profile CONNECTED CARE Every journey, clearly in view. Ravi Kumar DRIVER RK PASSENGER LIST Today's st"
+  },
+  {
+    "step": "Driver page /driver/route",
+    "ok": false,
+    "detail": "Vidya Bus Dashboard My Route Today's Students Trip Control Trip History Profile CONNECTED CARE Every journey, clearly in view. Ravi Kumar DRIVER RK ASSIGNED ROUTE My route "
+  },
+  {
+    "step": "Driver page /driver/profile",
+    "ok": true,
+    "detail": "Vidya Bus Dashboard My Route Today's Students Trip Control Trip History Profile CONNECTED CARE Every journey, clearly in view. Ravi Kumar DRIVER RK ACCOUNT Driver profile K"
+  },
+  {
+    "step": "Parent login",
+    "ok": true,
+    "detail": "https://vidya-school-web-app.vercel.app/student"
+  },
+  {
+    "step": "Parent page /student",
+    "ok": true,
+    "detail": "Vidya Bus Dashboard Live Tracking Attendance Trip History Notifications Profile CONNECTED CARE Every journey, clearly in view. Priya Sharma PARENT PS YOUR JOURNEY Travel wit"
+  },
+  {
+    "step": "Parent page /student/attendance",
+    "ok": true,
+    "detail": "Vidya Bus Dashboard Live Tracking Attendance Trip History Notifications Profile CONNECTED CARE Every journey, clearly in view. Priya Sharma PARENT PS JOURNEY RECORD Attendan"
+  },
+  {
+    "step": "Parent page /student/history",
+    "ok": false,
+    "detail": "Vidya Bus Dashboard Live Tracking Attendance Trip History Notifications Profile CONNECTED CARE Every journey, clearly in view. Priya Sharma PARENT PS PAST JOURNEYS Trip hist"
+  },
+  {
+    "step": "Parent page /student/tracking",
+    "ok": true,
+    "detail": "Vidya Bus Dashboard Live Tracking Attendance Trip History Notifications Profile CONNECTED CARE Every journey, clearly in view. Priya Sharma PARENT PS LIVE JOURNEY Bus tracki"
+  },
+  {
+    "step": "Parent page /student/profile",
+    "ok": true,
+    "detail": "Vidya Bus Dashboard Live Tracking Attendance Trip History Notifications Profile CONNECTED CARE Every journey, clearly in view. Priya Sharma PARENT PS STUDENT ACCOUNT Profile"
+  }
+]
