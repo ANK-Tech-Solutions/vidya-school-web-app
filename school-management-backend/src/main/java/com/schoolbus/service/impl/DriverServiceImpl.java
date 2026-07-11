@@ -25,18 +25,21 @@ public class DriverServiceImpl implements DriverService {
     private final StudentBusRepository studentBuses;
     private final TripRepository trips;
     private final TripLocationRepository tripLocations;
+    private final RouteStopRepository routeStops;
     private final NotificationService notificationService;
     private final LiveTrackingBroker liveTrackingBroker;
 
     public DriverServiceImpl(DriverRepository drivers, DriverBusRepository driverBuses,
                              StudentBusRepository studentBuses, TripRepository trips,
-                             TripLocationRepository tripLocations, NotificationService notificationService,
+                             TripLocationRepository tripLocations, RouteStopRepository routeStops,
+                             NotificationService notificationService,
                              LiveTrackingBroker liveTrackingBroker) {
         this.drivers = drivers;
         this.driverBuses = driverBuses;
         this.studentBuses = studentBuses;
         this.trips = trips;
         this.tripLocations = tripLocations;
+        this.routeStops = routeStops;
         this.notificationService = notificationService;
         this.liveTrackingBroker = liveTrackingBroker;
     }
@@ -279,5 +282,31 @@ public class DriverServiceImpl implements DriverService {
     @Transactional(readOnly = true)
     public TripResponse activeTrip() {
         return findActiveTrip(getCurrentDriver()).map(TripResponse::from).orElse(null);
+    }
+
+    @Override
+    @Transactional
+    public RouteStopResponse addStopFromLocation(DriverAddStopRequest request) {
+        DriverBus assignment = assignment(getCurrentDriver());
+        Route route = assignment.getRoute();
+        if (route == null) {
+            throw new BadRequestException("Assign a route before adding stops");
+        }
+        int nextOrder = routeStops.findByRouteId(route.getId()).stream()
+                .map(RouteStop::getStopOrder)
+                .filter(Objects::nonNull)
+                .max(Integer::compareTo)
+                .orElse(0) + 1;
+        RouteStop stop = RouteStop.builder()
+                .route(route)
+                .name(request.name().trim())
+                .stopOrder(nextOrder)
+                .latitude(request.latitude())
+                .longitude(request.longitude())
+                .address(request.address())
+                .geofenceRadiusM(request.geofenceRadiusM() == null ? 100 : request.geofenceRadiusM())
+                .build();
+        route.addStop(stop);
+        return RouteStopResponse.from(routeStops.save(stop));
     }
 }

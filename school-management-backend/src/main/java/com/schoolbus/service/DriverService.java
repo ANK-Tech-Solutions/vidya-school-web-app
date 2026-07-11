@@ -23,4 +23,5 @@ public interface DriverService {
     void sendSos(SosRequest request);
     Page<TripResponse> tripHistory(Pageable pageable);
     TripResponse activeTrip();
+    RouteStopResponse addStopFromLocation(DriverAddStopRequest request);
 }

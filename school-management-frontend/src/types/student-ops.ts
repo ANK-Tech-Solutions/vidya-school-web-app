@@ -54,6 +54,9 @@ export interface StudentDashboard {
   route?: StudentRoute | null;
   eta?: string;
   pickupTime?: string;
+  currentStopName?: string;
+  studentStopName?: string;
+  distanceRemainingKm?: number;
 }
 
 export interface StudentTracking {
@@ -70,6 +73,9 @@ export interface StudentTracking {
   schoolLongitude?: number;
   pickupLatitude?: number;
   pickupLongitude?: number;
+  currentStopName?: string;
+  nextStopName?: string;
+  studentStopName?: string;
   bus?: StudentBus | null;
   route?: StudentRoute | null;
 }

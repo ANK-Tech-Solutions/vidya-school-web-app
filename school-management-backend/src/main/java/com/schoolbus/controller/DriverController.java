@@ -101,4 +101,10 @@ public class DriverController {
     public ApiResponse<TripResponse> activeTrip() {
         return ApiResponse.success(driverService.activeTrip());
     }
+
+    @PostMapping("/route/stops")
+    public ResponseEntity<ApiResponse<RouteStopResponse>> addStop(@Valid @RequestBody DriverAddStopRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Stop added", driverService.addStopFromLocation(request)));
+    }
 }

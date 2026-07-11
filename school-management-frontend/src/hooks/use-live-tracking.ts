@@ -32,6 +32,7 @@ export function useLiveTracking(studentId?: number) {
         if (disposed) return null;
         setLocation(tracking);
         setLastUpdated(tracking.updatedAt ?? new Date().toISOString());
+        setError(null);
         return tracking;
       } catch {
         if (!disposed) setError("Unable to refresh the bus location.");
@@ -58,9 +59,24 @@ export function useLiveTracking(studentId?: number) {
           setError(null);
           client.subscribe(`/topic/trips/${tripId}/location`, (message) => {
             try {
-              const update = JSON.parse(message.body) as StudentTracking;
-              setLocation((current) => ({ ...current, ...update }));
-              setLastUpdated(update.updatedAt ?? new Date().toISOString());
+              const update = JSON.parse(message.body) as Record<string, unknown>;
+              setLocation((current) => ({
+                ...current,
+                latitude: (update.latitude as number | undefined) ?? current?.latitude,
+                longitude: (update.longitude as number | undefined) ?? current?.longitude,
+                speed: (update.speed as number | null | undefined) ?? current?.speed,
+                heading: (update.heading as number | null | undefined) ?? current?.heading,
+                status: (update.tripStatus as string | undefined) ?? current?.status,
+                updatedAt: (update.recordedAt as string | undefined) ?? new Date().toISOString(),
+                trip: {
+                  ...(current?.trip ?? {}),
+                  id: (update.tripId as number | undefined) ?? current?.trip?.id,
+                  status: (update.tripStatus as string | undefined) ?? current?.trip?.status,
+                },
+              }));
+              setLastUpdated((update.recordedAt as string | undefined) ?? new Date().toISOString());
+              // Refresh computed ETA/current stop from REST shortly after live ping
+              void refresh();
             } catch {
               setError("Received an invalid live location update.");
             }
