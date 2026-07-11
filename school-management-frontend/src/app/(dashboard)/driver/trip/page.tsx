@@ -17,7 +17,14 @@ export default function DriverTripPage() {
   const [confirming, setConfirming] = useState<Action | null>(null);
   const [busy, setBusy] = useState(false);
   const location = useDriverLocation();
-  useEffect(() => { driverOpsService.activeTrip().then(setTrip).catch(() => toast.error("Could not load trip status")); }, []);
+  useEffect(() => {
+    driverOpsService
+      .activeTrip()
+      .then(setTrip)
+      .catch(() => {
+        setTrip(null);
+      });
+  }, []);
   const execute = async () => {
     if (!confirming) return;
     setBusy(true);

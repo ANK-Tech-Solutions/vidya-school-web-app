@@ -74,9 +74,10 @@ public class DriverController {
     }
 
     @PostMapping("/trips/start")
-    public ResponseEntity<ApiResponse<TripResponse>> startTrip(@RequestBody StartTripRequest request) {
+    public ResponseEntity<ApiResponse<TripResponse>> startTrip(@RequestBody(required = false) StartTripRequest request) {
+        StartTripRequest body = request == null ? new StartTripRequest(null) : request;
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("Trip started", driverService.startTrip(request)));
+                .body(ApiResponse.success("Trip started", driverService.startTrip(body)));
     }
 
     @PostMapping("/trips/end")

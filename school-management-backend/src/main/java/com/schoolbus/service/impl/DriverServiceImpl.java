@@ -48,14 +48,22 @@ public class DriverServiceImpl implements DriverService {
                 .orElseThrow(() -> new ResourceNotFoundException("Driver profile not found"));
     }
 
+    private Optional<DriverBus> findAssignment(Driver driver) {
+        return driverBuses.findFirstByDriverIdAndActiveTrueOrderByAssignedFromDesc(driver.getId());
+    }
+
     private DriverBus assignment(Driver driver) {
-        return driverBuses.findFirstByDriverIdAndActiveTrueOrderByAssignedFromDesc(driver.getId())
+        return findAssignment(driver)
                 .orElseThrow(() -> new BadRequestException("No active bus assignment found"));
     }
 
-    private Trip currentTrip(Driver driver) {
+    private Optional<Trip> findActiveTrip(Driver driver) {
         return trips.findFirstByDriverIdAndStatusOrderByActualStartDesc(driver.getId(), TripStatus.IN_PROGRESS)
-                .or(() -> trips.findFirstByDriverIdAndStatusOrderByActualStartDesc(driver.getId(), TripStatus.EMERGENCY))
+                .or(() -> trips.findFirstByDriverIdAndStatusOrderByActualStartDesc(driver.getId(), TripStatus.EMERGENCY));
+    }
+
+    private Trip currentTrip(Driver driver) {
+        return findActiveTrip(driver)
                 .orElseThrow(() -> new ResourceNotFoundException("No active trip found"));
     }
 
@@ -67,11 +75,23 @@ public class DriverServiceImpl implements DriverService {
         Optional<Trip> active = trips.findFirstByDriverIdAndStatusOrderByActualStartDesc(driver.getId(), TripStatus.IN_PROGRESS)
                 .or(() -> trips.findFirstByDriverIdAndStatusOrderByActualStartDesc(driver.getId(), TripStatus.EMERGENCY));
         long students = assignment.map(this::studentsFor).map(List::size).orElse(0);
+        AssignedBusResponse bus = assignment.map(AssignedBusResponse::from).orElse(null);
+        AssignedRouteResponse route = assignment
+                .filter(a -> a.getRoute() != null)
+                .map(AssignedRouteResponse::from)
+                .orElse(null);
+        TripResponse trip = active.map(TripResponse::from).orElse(null);
         return new DriverDashboardResponse(
-                assignment.map(a -> a.getBus().getBusNumber()).orElse(null),
-                assignment.map(DriverBus::getRoute).map(Route::getName).orElse(null),
-                active.map(Trip::getStatus).orElse(null), driver.getLocationEnabled(), driver.getOnline(),
-                students, active.map(Trip::getId).orElse(null));
+                bus,
+                route,
+                trip,
+                driver.getLocationEnabled(),
+                driver.getOnline(),
+                students,
+                bus == null ? null : bus.busNumber(),
+                route == null ? null : route.name(),
+                active.map(Trip::getStatus).orElse(null),
+                trip == null ? null : trip.id());
     }
 
     @Override
@@ -101,21 +121,27 @@ public class DriverServiceImpl implements DriverService {
     @Override
     @Transactional(readOnly = true)
     public AssignedBusResponse assignedBus() {
-        return AssignedBusResponse.from(assignment(getCurrentDriver()));
+        return findAssignment(getCurrentDriver()).map(AssignedBusResponse::from).orElse(null);
     }
 
     @Override
     @Transactional(readOnly = true)
     public AssignedRouteResponse assignedRoute() {
-        DriverBus assignment = assignment(getCurrentDriver());
-        if (assignment.getRoute() == null) throw new BadRequestException("No route assigned to the active bus");
-        return AssignedRouteResponse.from(assignment);
+        return findAssignment(getCurrentDriver())
+                .filter(a -> a.getRoute() != null)
+                .map(AssignedRouteResponse::from)
+                .orElse(null);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<TodayStudentResponse> todayStudents() {
-        return studentsFor(assignment(getCurrentDriver())).stream().map(TodayStudentResponse::from).toList();
+        return findAssignment(getCurrentDriver())
+                .map(this::studentsFor)
+                .orElseGet(List::of)
+                .stream()
+                .map(TodayStudentResponse::from)
+                .toList();
     }
 
     private List<StudentBus> studentsFor(DriverBus assignment) {
@@ -228,7 +254,11 @@ public class DriverServiceImpl implements DriverService {
     private void notifyParents(Driver driver, NotificationType type, String title, String body, Trip trip) {
         String referenceType = trip == null ? "DRIVER" : "TRIP";
         Long referenceId = trip == null ? driver.getId() : trip.getId();
-        studentsFor(assignment(driver)).stream()
+        Optional<DriverBus> assignment = findAssignment(driver);
+        if (assignment.isEmpty()) {
+            return;
+        }
+        studentsFor(assignment.get()).stream()
                 .map(StudentBus::getStudent)
                 .map(Student::getParent)
                 .filter(Objects::nonNull)
@@ -248,6 +278,6 @@ public class DriverServiceImpl implements DriverService {
     @Override
     @Transactional(readOnly = true)
     public TripResponse activeTrip() {
-        return TripResponse.from(currentTrip(getCurrentDriver()));
+        return findActiveTrip(getCurrentDriver()).map(TripResponse::from).orElse(null);
     }
 }

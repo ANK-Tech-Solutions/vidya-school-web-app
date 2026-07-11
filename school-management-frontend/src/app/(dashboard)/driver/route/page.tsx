@@ -10,7 +10,15 @@ import type { AssignedRoute } from "@/types/driver-ops";
 
 export default function DriverRoutePage() {
   const [route, setRoute] = useState<AssignedRoute | null>(null);
-  useEffect(() => { driverOpsService.getRoute().then(setRoute).catch(() => toast.error("Could not load your route")); }, []);
+  useEffect(() => {
+    driverOpsService
+      .getRoute()
+      .then((data) => setRoute(data))
+      .catch(() => {
+        setRoute(null);
+        toast.error("Could not load your route");
+      });
+  }, []);
   const stops = [...(route?.stops ?? [])].sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
   return <><PageHeader eyebrow="Assigned route" title={route?.name ?? "My route"} description={route?.description ?? "Your scheduled stops for today."} />
     <Card className="p-6"><div className="flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-display text-xl font-bold">{route?.code ?? "Route pending"}</h2><p className="mt-1 text-sm text-[var(--muted-foreground)]">{route?.distanceKm ?? "—"} km · {route?.estimatedDurationMins ?? "—"} min</p></div><Badge>{stops.length} stops</Badge></div>
