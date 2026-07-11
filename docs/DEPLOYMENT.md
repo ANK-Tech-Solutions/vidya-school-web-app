@@ -1,8 +1,14 @@
 # Production deployment guide
 
-## Deployment model
+## Recommended: Vercel + Render + AWS RDS
 
-Use Oracle Free, the Spring Boot backend, and the Next.js frontend as separate services. Put an HTTPS reverse proxy in front of the frontend and backend so browsers use one public origin:
+For the usual cloud setup (Next.js on Vercel, Spring Boot on Render, MySQL on AWS RDS), follow **[VERCEL_RENDER.md](VERCEL_RENDER.md)**.
+
+That guide covers env vars (`NEXT_PUBLIC_API_URL`, `CORS_ALLOWED_ORIGINS`, `DB_*`, `JWT_SECRET`), health checks, and common CORS/cold-start issues.
+
+## Alternative: self-hosted / Docker + Nginx
+
+Use the Spring Boot backend and Next.js frontend as separate services. Put an HTTPS reverse proxy in front so browsers use one public origin:
 
 ```text
 https://bus.example.com/       -> Next.js :3000
@@ -65,7 +71,7 @@ docker build \
 
 Copy and adapt [nginx.conf](nginx.conf). Provide certificates through Certbot, your cloud load balancer, or an organization-managed certificate process. The configuration forwards `/api/`, Swagger, Actuator, and `/ws/`, including WebSocket upgrade headers.
 
-Set both `APP_CORS_ALLOWED_ORIGINS=https://bus.example.com` (REST) and `CORS_ORIGINS=https://bus.example.com` (WebSocket) in the backend. Do not use wildcard origins with credentials.
+Set `CORS_ALLOWED_ORIGINS=https://bus.example.com` (used for both REST CORS and WebSocket). Origin patterns such as `https://*.vercel.app` are supported via `setAllowedOriginPatterns`.
 
 ## Secrets
 

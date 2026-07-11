@@ -24,9 +24,9 @@ Vidya Bus is a role-based school transport platform for administrators, drivers,
 - **Frontend:** Next.js 16, React 19, TypeScript, Tailwind, Zustand, Leaflet, PWA
 - **Backend:** Spring Boot 3.4 / Java 17, Spring Security, JWT, STOMP/SockJS, Actuator
 - **Data:** MySQL 8, Flyway migrations, HikariCP
-- **Deployment:** Docker Compose for local stack; Nginx recommended as TLS edge proxy
+- **Deployment:** Vercel (frontend) + Render (backend) + AWS RDS MySQL; Docker/Nginx also documented
 
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/API.md](docs/API.md), [docs/ER_DIAGRAM.md](docs/ER_DIAGRAM.md), and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+See [docs/VERCEL_RENDER.md](docs/VERCEL_RENDER.md), [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), [docs/API.md](docs/API.md), [docs/ER_DIAGRAM.md](docs/ER_DIAGRAM.md), and [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
 
 ## Run locally
 

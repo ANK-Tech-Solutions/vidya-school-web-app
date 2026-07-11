@@ -1,0 +1,31 @@
+# Render Blueprint — backend API
+# Dashboard: New > Blueprint > connect this repo, or create Web Service manually.
+# Docs: docs/VERCEL_RENDER.md
+
+services:
+  - type: web
+    name: vidya-school-backend
+    runtime: docker
+    plan: free
+    region: singapore
+    rootDir: school-management-backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /actuator/health
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: SERVER_PORT
+        value: 8080
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_SCHEMA
+        value: vidya_db
+      - key: JWT_SECRET
+        generateValue: true
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
