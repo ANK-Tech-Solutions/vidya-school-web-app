@@ -110,11 +110,16 @@ Redeploy the backend (or restart) so CORS picks up the change.
 
 ## 3. Smoke test
 
-1. Open the Vercel URL  
+Use the **production** domain (`https://your-app.vercel.app`), not a preview URL like `https://vidya-school-web-xxxxx-….vercel.app`.
+
+Preview URLs often show **“Log in to Vercel”** because [Deployment Protection / Vercel Authentication](https://vercel.com/docs/deployment-protection) is on. To open previews publicly: Project → **Deployment Protection** → disable Vercel Authentication (or add a [Protection Exception](https://vercel.com/docs/deployment-protection/methods-to-bypass-deployment-protection/deployment-protection-exceptions)).
+
+1. Open the production Vercel URL  
 2. Login: `admin` / `Password@123`  
 3. Confirm admin dashboard loads  
 4. Try `driver1` and `parent1`  
-5. If login fails, check browser Network tab for API calls to Render and CORS errors
+5. If login fails, check browser Network tab for API calls to Render and CORS errors. Ensure Render has:
+   `CORS_ALLOWED_ORIGINS=https://your-app.vercel.app,https://*.vercel.app,http://localhost:3000`
 
 ---
 
