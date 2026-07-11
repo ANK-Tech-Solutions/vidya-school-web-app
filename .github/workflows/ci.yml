@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [main, development, develop]
   pull_request:
-    branches: [main, develop]
+    branches: [main, development, develop]
 
 jobs:
   backend:
@@ -19,6 +19,8 @@ jobs:
           distribution: temurin
           java-version: "17"
           cache: maven
+      - name: Make Maven wrapper executable
+        run: chmod +x mvnw
       - name: Compile & unit tests
         run: ./mvnw -B -DskipITs test
 
@@ -34,7 +36,7 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: school-management-frontend/package-lock.json
-      - run: npm ci
+      - run: npm install
       - name: Lint
         run: npm run lint
       - name: Build
