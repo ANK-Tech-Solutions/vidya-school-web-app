@@ -1,0 +1,3 @@
+package com.schoolbus.dto.response;
+import com.schoolbus.entity.Route; import java.math.*; import java.util.*;
+public record RouteResponse(Long id,String name,String code,String description,BigDecimal startLatitude,BigDecimal startLongitude,BigDecimal endLatitude,BigDecimal endLongitude,Integer estimatedDurationMins,BigDecimal distanceKm,Boolean active,List<RouteStopResponse> stops){public static RouteResponse from(Route r){return new RouteResponse(r.getId(),r.getName(),r.getCode(),r.getDescription(),r.getStartLatitude(),r.getStartLongitude(),r.getEndLatitude(),r.getEndLongitude(),r.getEstimatedDurationMins(),r.getDistanceKm(),r.getActive(),r.getStops().stream().map(RouteStopResponse::from).toList());}}

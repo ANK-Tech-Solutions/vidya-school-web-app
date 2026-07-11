@@ -1,0 +1,3 @@
+import { api } from "@/services/api"; import type { ApiResponse } from "@/types/api"; import type { PageResponse } from "@/types/common"; import type { Bus, BusPayload } from "@/types/bus";
+const base = "/api/v1/admin/buses";
+export const busService = { list: async (params?: Record<string, unknown>) => (await api.get<ApiResponse<PageResponse<Bus>>>(base, { params })).data.data, create: async (payload: BusPayload) => (await api.post<ApiResponse<Bus>>(base, payload)).data.data, update: async (id: number, payload: BusPayload) => (await api.put<ApiResponse<Bus>>(`${base}/${id}`, payload)).data.data, deactivate: async (id: number) => (await api.patch<ApiResponse<Bus>>(`${base}/${id}/deactivate`)).data.data };

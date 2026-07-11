@@ -1,0 +1,2 @@
+import { BusFront } from "lucide-react";
+export function LoadingScreen() { return <div className="flex min-h-screen items-center justify-center bg-[var(--background)]"><div className="text-center"><div className="mx-auto flex h-14 w-14 animate-pulse items-center justify-center rounded-2xl bg-[var(--primary)] text-white"><BusFront size={27} /></div><p className="mt-4 text-sm font-semibold text-[var(--muted-foreground)]">Preparing your journey…</p></div></div>; }

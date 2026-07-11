@@ -1,0 +1,3 @@
+import { api } from "@/services/api"; import type { ApiResponse } from "@/types/api"; import type { PageResponse } from "@/types/common"; import type { Parent, ParentPayload } from "@/types/parent";
+const base = "/api/v1/admin/parents";
+export const parentService = { list: async (params?: Record<string, unknown>) => (await api.get<ApiResponse<PageResponse<Parent>>>(base, { params })).data.data, create: async (payload: ParentPayload) => (await api.post<ApiResponse<Parent>>(base, payload)).data.data, update: async (id: number, payload: ParentPayload) => (await api.put<ApiResponse<Parent>>(`${base}/${id}`, payload)).data.data, deactivate: async (id: number) => (await api.patch<ApiResponse<Parent>>(`${base}/${id}/deactivate`)).data.data };

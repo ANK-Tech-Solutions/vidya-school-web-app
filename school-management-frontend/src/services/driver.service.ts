@@ -1,0 +1,3 @@
+import { api } from "@/services/api"; import type { ApiResponse } from "@/types/api"; import type { PageResponse } from "@/types/common"; import type { Driver, DriverPayload } from "@/types/driver";
+const base = "/api/v1/admin/drivers";
+export const driverService = { list: async (params?: Record<string, unknown>) => (await api.get<ApiResponse<PageResponse<Driver>>>(base, { params })).data.data, create: async (payload: DriverPayload) => (await api.post<ApiResponse<Driver>>(base, payload)).data.data, update: async (id: number, payload: DriverPayload) => (await api.put<ApiResponse<Driver>>(`${base}/${id}`, payload)).data.data, deactivate: async (id: number) => (await api.patch<ApiResponse<Driver>>(`${base}/${id}/deactivate`)).data.data };

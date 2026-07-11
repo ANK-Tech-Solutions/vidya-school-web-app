@@ -1,0 +1,3 @@
+package com.schoolbus.repository;
+import com.schoolbus.entity.Route; import org.springframework.data.domain.*; import org.springframework.data.jpa.repository.*; import org.springframework.data.repository.query.Param; import java.util.*;
+public interface RouteRepository extends org.springframework.data.jpa.repository.JpaRepository<Route,Long> { Optional<Route> findByIdAndSchoolId(Long id,Long schoolId); Page<Route> findBySchoolId(Long schoolId,Pageable p); @Query("select r from Route r where r.school.id=:schoolId and (:search is null or lower(r.name) like lower(concat('%',:search,'%')) or lower(r.code) like lower(concat('%',:search,'%')))") Page<Route> search(@Param("schoolId") Long schoolId,@Param("search") String search,Pageable p); }

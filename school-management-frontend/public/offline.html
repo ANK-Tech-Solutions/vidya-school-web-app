@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0f6570" />
+    <title>Vidya Bus — Offline</title>
+    <style>
+      :root { color-scheme: light; font-family: Arial, sans-serif; }
+      body { align-items: center; background: #f2f6f7; color: #12343a; display: flex; justify-content: center; margin: 0; min-height: 100vh; text-align: center; }
+      main { max-width: 28rem; padding: 2rem; }
+      h1 { color: #0f6570; margin-bottom: .75rem; }
+      p { line-height: 1.6; }
+      button { background: #0f6570; border: 0; border-radius: .5rem; color: #fff; cursor: pointer; font: inherit; margin-top: 1rem; padding: .75rem 1rem; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>You’re offline</h1>
+      <p>Vidya Bus needs a connection to show the latest trip and safety information.</p>
+      <button type="button" onclick="window.location.reload()">Try again</button>
+    </main>
+  </body>
+</html>
