@@ -1,15 +1,31 @@
 package com.schoolbus.config;
 
-import java.util.ArrayList;
-import java.util.List;
-import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@Getter
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 @Setter
 @ConfigurationProperties(prefix = "app.websocket")
 public class WebSocketProperties {
+
     private String endpoint = "/ws";
-    private List<String> allowedOrigins = new ArrayList<>();
+    /** Comma-separated origins/patterns; falls back to CORS origins when empty. */
+    private String allowedOrigins = "";
+
+    public String getEndpoint() {
+        return endpoint;
+    }
+
+    public List<String> getAllowedOrigins() {
+        if (allowedOrigins == null || allowedOrigins.isBlank()) {
+            return new ArrayList<>();
+        }
+        return Arrays.stream(allowedOrigins.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
 }
