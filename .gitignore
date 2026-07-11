@@ -1,0 +1,35 @@
+# Root
+.env
+.env.local
+.env.*.local
+*.log
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.iml
+.cursor/
+
+# Backend
+school-management-backend/target/
+school-management-backend/.mvn/wrapper/maven-wrapper.jar
+!school-management-backend/.mvn/wrapper/maven-wrapper.properties
+
+# Frontend
+school-management-frontend/node_modules/
+school-management-frontend/.next/
+school-management-frontend/out/
+school-management-frontend/coverage/
+school-management-frontend/.turbo/
+school-management-frontend/public/sw.js
+school-management-frontend/public/sw.js.map
+school-management-frontend/public/workbox-*.js
+school-management-frontend/public/workbox-*.js.map
+school-management-frontend/public/swe-worker-*.js
+school-management-frontend/public/swe-worker-*.js.map
+
+# Docker volumes / secrets
+oracle_data/
+postgres_data/
+mysql_data/
+secrets/

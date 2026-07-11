@@ -1,0 +1,3 @@
+package com.schoolbus.repository;
+import com.schoolbus.entity.StudentBus; import org.springframework.data.domain.*; import java.util.*;
+public interface StudentBusRepository extends org.springframework.data.jpa.repository.JpaRepository<StudentBus,Long> { Page<StudentBus> findByStudentSchoolId(Long schoolId,Pageable p); Optional<StudentBus> findByIdAndStudentSchoolId(Long id,Long schoolId); Optional<StudentBus> findFirstByStudentIdAndActiveTrueOrderByAssignedFromDesc(Long studentId); List<StudentBus> findByBusIdAndActiveTrue(Long busId); List<StudentBus> findByRouteIdAndActiveTrue(Long routeId); }

@@ -1,0 +1,3 @@
+package com.schoolbus.dto.response;
+import com.schoolbus.entity.Bus; import com.schoolbus.entity.enums.BusStatus; import java.time.*;
+public record BusResponse(Long id,String busNumber,String plateNumber,String make,String model,Integer yearOfMake,Integer capacity,String color,String gpsDeviceId,BusStatus status,LocalDate insuranceExpiry,LocalDate fitnessExpiry) {public static BusResponse from(Bus b){return new BusResponse(b.getId(),b.getBusNumber(),b.getPlateNumber(),b.getMake(),b.getModel(),b.getYearOfMake(),b.getCapacity(),b.getColor(),b.getGpsDeviceId(),b.getStatus(),b.getInsuranceExpiry(),b.getFitnessExpiry());}}
