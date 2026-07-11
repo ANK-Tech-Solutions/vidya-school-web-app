@@ -1,0 +1,1 @@
+export interface DashboardStats { driversOnline: number; totalStudents: number; totalParents: number; totalDrivers: number; activeBuses: number; runningTrips: number; completedTripsToday: number; unreadNotifications: number; }

@@ -1,0 +1,3 @@
+import { api } from "@/services/api"; import type { ApiResponse } from "@/types/api"; import type { PageResponse } from "@/types/common"; import type { Student, StudentPayload } from "@/types/student";
+const base = "/api/v1/admin/students";
+export const studentService = { list: async (params?: Record<string, unknown>) => (await api.get<ApiResponse<PageResponse<Student>>>(base, { params })).data.data, create: async (payload: StudentPayload) => (await api.post<ApiResponse<Student>>(base, payload)).data.data, update: async (id: number, payload: StudentPayload) => (await api.put<ApiResponse<Student>>(`${base}/${id}`, payload)).data.data, deactivate: async (id: number) => (await api.patch<ApiResponse<Student>>(`${base}/${id}/deactivate`)).data.data };

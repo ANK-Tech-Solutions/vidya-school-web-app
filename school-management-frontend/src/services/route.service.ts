@@ -1,0 +1,3 @@
+import { api } from "@/services/api"; import type { ApiResponse } from "@/types/api"; import type { PageResponse } from "@/types/common"; import type { Route, RoutePayload } from "@/types/route";
+const base = "/api/v1/admin/routes";
+export const routeService = { list: async (params?: Record<string, unknown>) => (await api.get<ApiResponse<PageResponse<Route>>>(base, { params })).data.data, create: async (payload: RoutePayload) => (await api.post<ApiResponse<Route>>(base, payload)).data.data, update: async (id: number, payload: RoutePayload) => (await api.put<ApiResponse<Route>>(`${base}/${id}`, payload)).data.data, deactivate: async (id: number) => (await api.patch<ApiResponse<Route>>(`${base}/${id}/deactivate`)).data.data };

@@ -1,0 +1,55 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f2f6f7;
+  --foreground: #16333a;
+  --primary: #0f6570;
+  --primary-strong: #094d56;
+  --accent: #f2b84b;
+  --accent-strong: #e3a331;
+  --accent-foreground: #3c2b05;
+  --panel: rgba(255,255,255,.72);
+  --sidebar: rgba(247,250,250,.82);
+  --input: rgba(255,255,255,.8);
+  --muted: rgba(20,64,72,.07);
+  --muted-foreground: #63767b;
+  --border: rgba(20,72,80,.12);
+  --ring: #20a2a4;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-ui);
+  --font-display: var(--font-display);
+}
+
+.dark {
+  --background: #0b1d22;
+  --foreground: #edf7f6;
+  --primary: #3eb6b1;
+  --primary-strong: #69cbc5;
+  --accent: #f5bb50;
+  --accent-strong: #ffd174;
+  --accent-foreground: #352402;
+  --panel: rgba(18,48,55,.72);
+  --sidebar: rgba(10,31,36,.84);
+  --input: rgba(8,28,33,.72);
+  --muted: rgba(223,247,245,.08);
+  --muted-foreground: #a7bdbd;
+  --border: rgba(211,242,239,.12);
+  --ring: #61c8c3;
+}
+
+* { border-color: var(--border); }
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-ui), sans-serif;
+  min-height: 100vh;
+  background-image: radial-gradient(circle at 10% -10%, rgba(39,145,151,.13), transparent 30%), radial-gradient(circle at 100% 10%, rgba(242,184,75,.11), transparent 28%);
+}
+
+.font-display { font-family: var(--font-display), sans-serif; }
+.glass-panel { background: var(--panel); border: 1px solid var(--border); box-shadow: 0 18px 45px rgba(13, 50, 57, .08); backdrop-filter: blur(18px); }
+.dark .glass-panel { box-shadow: 0 18px 45px rgba(0, 0, 0, .22); }
