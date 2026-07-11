@@ -146,4 +146,6 @@ export const driverOpsService = {
     };
   },
   activeTrip: async () => mapTrip(await get<Record<string, unknown> | null>("/trips/active")),
+  addStop: async (payload: { name: string; latitude: number; longitude: number; address?: string }) =>
+    post<Record<string, unknown>>("/route/stops", payload),
 };
