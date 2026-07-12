@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { PageHeader } from "@/components/layout/page-header";
 import { driverOpsService } from "@/services/driver-ops.service";
 import { useDriverLocation } from "@/hooks/use-driver-location";
+import { apiErrorMessage } from "@/lib/api-error";
 import type { DriverDashboard, Trip } from "@/types/driver-ops";
 
 export default function DriverPage() {
@@ -22,8 +23,8 @@ export default function DriverPage() {
       const data = await driverOpsService.getDashboard();
       setDashboard(data);
       setTrip(data.activeTrip ?? null);
-    } catch {
-      toast.error("Could not load your driver dashboard");
+    } catch (error) {
+      toast.error(apiErrorMessage(error, "Could not load your driver dashboard"));
     }
   };
   useEffect(() => {
@@ -36,6 +37,13 @@ export default function DriverPage() {
     setBusy(true);
     try {
       if (action === "start") {
+        if (!location.enabled) {
+          const enableError = await location.enable();
+          if (enableError) {
+            toast.error(enableError);
+            return;
+          }
+        }
         const next = await driverOpsService.startTrip();
         setTrip(next);
         toast.success("Trip started");
@@ -47,16 +55,27 @@ export default function DriverPage() {
         await driverOpsService.sos();
         toast.success("SOS alert sent");
       }
-    } catch {
-      toast.error(`Could not ${action === "sos" ? "send SOS" : `${action} trip`}`);
+      await load();
+    } catch (error) {
+      toast.error(apiErrorMessage(error, `Could not ${action === "sos" ? "send SOS" : `${action} trip`}`));
     } finally {
       setBusy(false);
     }
   };
   const toggleLocation = async () => {
     const wasEnabled = location.enabled;
-    const success = wasEnabled ? await location.disable().then(() => true) : await location.enable();
-    if (success) toast.success(wasEnabled ? "Location sharing disabled" : "Location sharing enabled");
+    if (wasEnabled) {
+      await location.disable();
+      toast.success("Location sharing disabled");
+      await load();
+      return;
+    }
+    const enableError = await location.enable();
+    if (enableError) toast.error(enableError);
+    else {
+      toast.success("Location sharing enabled");
+      await load();
+    }
   };
   const statuses = [
     { label: "Online", value: dashboard?.online ? "Online" : "Offline", ok: Boolean(dashboard?.online), icon: Wifi },

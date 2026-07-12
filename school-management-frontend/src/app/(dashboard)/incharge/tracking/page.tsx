@@ -14,18 +14,41 @@ export default function InchargeTrackingPage() {
   const [drivers, setDrivers] = useState<Driver[]>([]);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const [s, d] = await Promise.all([inchargeService.dashboard(), inchargeService.drivers()]);
-        setStats(s);
-        setDrivers(d.content.filter((x) => x.lastLatitude != null && x.lastLongitude != null));
-      } catch {
-        toast.error("Could not refresh tracking");
-      }
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      inchargeService
+        .dashboard()
+        .then((s) => {
+          if (active) setStats(s);
+        })
+        .catch(() => {
+          if (active) toast.error("Could not refresh tracking");
+        });
+      inchargeService
+        .drivers()
+        .then((d) => {
+          if (active) setDrivers(d.content.filter((x) => x.lastLatitude != null && x.lastLongitude != null));
+        })
+        .catch(() => {
+          if (active) toast.error("Could not refresh tracking");
+        });
+    });
+    const id = window.setInterval(() => {
+      void Promise.resolve().then(async () => {
+        try {
+          const [s, d] = await Promise.all([inchargeService.dashboard(), inchargeService.drivers()]);
+          setStats(s);
+          setDrivers(d.content.filter((x) => x.lastLatitude != null && x.lastLongitude != null));
+        } catch {
+          toast.error("Could not refresh tracking");
+        }
+      });
+    }, 5000);
+    return () => {
+      active = false;
+      window.clearInterval(id);
     };
-    load();
-    const id = window.setInterval(load, 5000);
-    return () => window.clearInterval(id);
   }, []);
 
   return (
