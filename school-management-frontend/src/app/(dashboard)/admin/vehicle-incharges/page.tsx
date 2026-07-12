@@ -38,7 +38,13 @@ export default function AdminVehicleInchargesPage() {
   }, []);
 
   useEffect(() => {
-    load();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) load();
+    });
+    return () => {
+      active = false;
+    };
   }, [load]);
 
   const save = async (e: React.FormEvent) => {

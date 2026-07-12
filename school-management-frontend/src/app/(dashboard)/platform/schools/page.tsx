@@ -42,7 +42,13 @@ export default function PlatformSchoolsPage() {
   }, []);
 
   useEffect(() => {
-    load();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) load();
+    });
+    return () => {
+      active = false;
+    };
   }, [load]);
 
   const resetForm = () => {
