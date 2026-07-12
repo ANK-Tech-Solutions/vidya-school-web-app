@@ -104,7 +104,7 @@ const modules: Record<
 export default async function AdminAcademicPage({ params }: { params: Promise<{ slug: string[] }> }) {
   const { slug } = await params;
   if (slug[0] === "leaves") notFound();
-  const module = modules[slug[0]];
-  if (!module || slug.length !== 1) notFound();
-  return <AcademicModule {...module} />;
+  const pageConfig = modules[slug[0]];
+  if (!pageConfig || slug.length !== 1) notFound();
+  return <AcademicModule {...pageConfig} />;
 }

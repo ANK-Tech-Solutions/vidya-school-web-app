@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -48,7 +48,7 @@ export default function StudentsPage() {
   const [deactivate, setDeactivate] = useState<Student | null>(null);
   const form = useForm<Values>({ resolver: zodResolver(schema), defaultValues: blank });
 
-  const load = () => {
+  const load = useCallback(() => {
     setLoading(true);
     Promise.all([studentService.list({ search, size: 100 }), parentService.list({ size: 100 })])
       .then(([data, parentData]) => {
@@ -57,14 +57,12 @@ export default function StudentsPage() {
       })
       .catch(() => toast.error("Could not load students"))
       .finally(() => setLoading(false));
-  };
+  }, [search]);
 
-  // `load` intentionally reads the current search value and is debounced here.
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     const timer = setTimeout(load, 250);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [load]);
 
   const open = (student?: Student) => {
     setSelected(student ?? null);

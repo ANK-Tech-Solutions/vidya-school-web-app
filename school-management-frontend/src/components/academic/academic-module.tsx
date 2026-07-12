@@ -79,8 +79,26 @@ export function AcademicModule({
   };
 
   useEffect(() => {
-    load();
-  }, [endpoint]);
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (!active) return;
+      setLoading(true);
+      academicService
+        .get(endpoint)
+        .then((data) => {
+          if (active) setRows(asRecords(data));
+        })
+        .catch(() => {
+          if (active) toast.error(`Could not load ${title.toLowerCase()}`);
+        })
+        .finally(() => {
+          if (active) setLoading(false);
+        });
+    });
+    return () => {
+      active = false;
+    };
+  }, [endpoint, title]);
 
   const create = async (form: FormData) => {
     if (!createEndpoint) return;
@@ -172,7 +190,7 @@ export function AcademicModule({
                   {record.status != null ? <Badge variant="slate">{String(record.status)}</Badge> : null}
                   {record.priority != null ? <Badge>{String(record.priority)}</Badge> : null}
                 </div>
-                {(record.body || record.description || record.reason) ? (
+                {record.body || record.description || record.reason ? (
                   <p className="mt-2 text-sm text-[var(--muted-foreground)]">{String(record.body ?? record.description ?? record.reason)}</p>
                 ) : null}
                 <ul className="mt-3 space-y-1 text-xs text-[var(--muted-foreground)]">

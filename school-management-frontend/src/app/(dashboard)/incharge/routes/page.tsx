@@ -43,22 +43,32 @@ export default function InchargeRoutesPage() {
   const form = useForm<Values>({ defaultValues: { name: "", code: "", stops: [{ name: "", latitude: "", longitude: "" }] } });
   const { fields, append, remove } = useFieldArray({ control: form.control, name: "stops" });
 
+  useEffect(() => {
+    void Promise.resolve().then(() => {
+      inchargeService
+        .listRoutes()
+        .then((x) => {
+          setRoutes(x.content);
+          setManaging((current) => {
+            if (!current) return current;
+            return x.content.find((r) => r.id === current.id) ?? null;
+          });
+        })
+        .catch(() => toast.error("Could not load routes"));
+    });
+  }, []);
+
   const load = () =>
     inchargeService
       .listRoutes()
       .then((x) => {
         setRoutes(x.content);
-        if (managing) {
-          const next = x.content.find((r) => r.id === managing.id) ?? null;
-          setManaging(next);
-        }
+        setManaging((current) => {
+          if (!current) return current;
+          return x.content.find((r) => r.id === current.id) ?? null;
+        });
       })
       .catch(() => toast.error("Could not load routes"));
-
-  useEffect(() => {
-    load();
-  }, []);
-
   const show = (route?: Route) => {
     setEditing(route ?? null);
     form.reset(
