@@ -10,7 +10,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { API_URL, ROUTES } from "@/lib/constants";
+import { API_URL, homeRouteForRoles } from "@/lib/constants";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/stores/auth-store";
 import { BrandingSync } from "@/components/layout/branding-sync";
@@ -62,9 +62,7 @@ export function LoginForm() {
     try {
       const auth = await authService.login(values);
       setAuth(auth);
-      const role = auth.user.roles[0];
-      const destination = role === "ADMIN" ? ROUTES.admin : role === "DRIVER" ? ROUTES.driver : role === "TEACHER" ? ROUTES.teacher : ROUTES.student;
-      window.location.assign(destination);
+      window.location.assign(homeRouteForRoles(auth.user.roles));
     } catch (error) {
       const message = loginErrorMessage(error);
       toast.error(message.title, { description: message.description });
@@ -130,7 +128,7 @@ export function LoginForm() {
         </Button>
       </div>
       <p className="mt-6 rounded-xl bg-[var(--muted)] px-3 py-2.5 text-center text-xs text-[var(--muted-foreground)]">
-        Demo access: <strong className="text-[var(--foreground)]">admin or teacher1 / Password@123</strong>
+        Demo access: <strong className="text-[var(--foreground)]">admin · vehicle1 · teacher1 · driver1 · parent1 / Password@123</strong>
       </p>
     </motion.form></>
   );
