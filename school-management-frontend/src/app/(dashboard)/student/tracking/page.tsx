@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { Clock3, Gauge, MapPinned, Radio, Route } from "lucide-react";
 import { StudentSelector } from "@/components/student/student-selector";
 import { LiveMap } from "@/components/maps/live-map";
+import { RouteTrackPanel } from "@/components/tracking/route-track-panel";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { PageHeader } from "@/components/layout/page-header";
@@ -25,11 +26,12 @@ export default function TrackingPage() {
     tracking?.trip?.status?.replaceAll("_", " ") ??
     tracking?.status?.replaceAll("_", " ") ??
     "No active trip";
+  const eta = tracking?.eta ?? tracking?.trip?.eta ?? "Not available";
   const stats = [
     { label: "Live connection", value: connected ? "Connected" : "Polling", icon: Radio },
     { label: "Current speed", value: speed, icon: Gauge },
     { label: "Distance to your stop", value: distance, icon: Route },
-    { label: "ETA to your stop", value: tracking?.eta ?? tracking?.trip?.eta ?? "Not available", icon: Clock3 },
+    { label: "ETA to your stop", value: eta, icon: Clock3 },
   ];
 
   return (
@@ -38,7 +40,7 @@ export default function TrackingPage() {
         <PageHeader
           eyebrow="Live journey"
           title="Bus tracking"
-          description="See where the bus is on the route and how long until your stop."
+          description="Follow the full route, bus status, your stop, and live ETA."
         />
         <StudentSelector onChange={selectStudent} />
       </div>
@@ -60,6 +62,9 @@ export default function TrackingPage() {
                 busLat={tracking?.latitude}
                 busLng={tracking?.longitude}
                 busHeading={tracking?.heading}
+                stops={tracking?.stops}
+                currentStopId={tracking?.currentStopId}
+                studentStopId={tracking?.studentStopId}
               />
             </Card>
             <Card className="p-5">
@@ -85,6 +90,17 @@ export default function TrackingPage() {
               </p>
             </Card>
           </div>
+          <RouteTrackPanel
+            routeName={tracking?.route?.name}
+            busNumber={tracking?.bus?.busNumber}
+            tripStatus={tracking?.status ?? tracking?.trip?.status}
+            stops={tracking?.stops ?? []}
+            currentStopId={tracking?.currentStopId}
+            nextStopId={tracking?.nextStopId}
+            studentStopId={tracking?.studentStopId}
+            studentStopName={tracking?.studentStopName}
+            eta={eta === "Not available" ? null : eta}
+          />
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             {stats.map(({ label, value, icon: Icon }) => (
               <Card key={label} className="p-5">

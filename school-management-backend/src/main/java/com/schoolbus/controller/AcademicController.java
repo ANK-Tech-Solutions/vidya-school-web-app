@@ -657,9 +657,79 @@ public class AcademicController {
     @GetMapping("/api/v1/teacher/live-tracking-stats")
     @Transactional(readOnly = true)
     public ApiResponse<?> trackingStats() {
+        Long schoolId = sid();
+        long onlineDrivers = em.createQuery("select count(d) from Driver d where d.school.id=:s and d.online=true", Long.class)
+                .setParameter("s", schoolId)
+                .getSingleResult();
+        long runningTrips = em.createQuery(
+                        "select count(t) from Trip t where t.school.id=:s and t.status=com.schoolbus.entity.enums.TripStatus.IN_PROGRESS",
+                        Long.class)
+                .setParameter("s", schoolId)
+                .getSingleResult();
+        long activeBuses = em.createQuery(
+                        "select count(b) from Bus b where b.school.id=:s and b.status=com.schoolbus.entity.enums.BusStatus.ACTIVE",
+                        Long.class)
+                .setParameter("s", schoolId)
+                .getSingleResult();
+
+        List<Map<String, Object>> tracks = em
+                .createQuery(
+                        "select db from DriverBus db where db.driver.school.id=:s and db.active=true order by db.assignedFrom desc",
+                        DriverBus.class)
+                .setParameter("s", schoolId)
+                .getResultList()
+                .stream()
+                .collect(java.util.stream.Collectors.toMap(
+                        db -> db.getDriver().getId(),
+                        db -> db,
+                        (first, ignored) -> first,
+                        java.util.LinkedHashMap::new))
+                .values()
+                .stream()
+                .map(db -> {
+                    Driver d = db.getDriver();
+                    Route route = db.getRoute();
+                    List<RouteStop> routeStops = route == null
+                            ? List.of()
+                            : em.createQuery(
+                                            "select s from RouteStop s where s.route.id=:r order by s.stopOrder",
+                                            RouteStop.class)
+                                    .setParameter("r", route.getId())
+                                    .getResultList();
+                    List<Map<String, Object>> stops = routeStops.stream()
+                            .map(stop -> {
+                                Map<String, Object> m = new HashMap<>();
+                                m.put("id", stop.getId());
+                                m.put("name", stop.getName());
+                                m.put("stopOrder", stop.getStopOrder());
+                                m.put("latitude", stop.getLatitude());
+                                m.put("longitude", stop.getLongitude());
+                                m.put("address", stop.getAddress());
+                                return m;
+                            })
+                            .toList();
+                    Map<String, Object> row = new HashMap<>();
+                    row.put("driverId", d.getId());
+                    row.put("driverName", d.getUser().getFullName());
+                    row.put("online", d.getOnline());
+                    row.put("locationEnabled", d.getLocationEnabled());
+                    row.put("latitude", d.getLastLatitude());
+                    row.put("longitude", d.getLastLongitude());
+                    row.put("lastLocationAt", d.getLastLocationAt());
+                    row.put("busNumber", db.getBus().getBusNumber());
+                    row.put("routeId", route == null ? null : route.getId());
+                    row.put("routeName", route == null ? null : route.getName());
+                    row.put("tripStatus", Boolean.TRUE.equals(d.getOnline()) ? "IN_PROGRESS" : "OFFLINE");
+                    row.put("stops", stops);
+                    return row;
+                })
+                .toList();
+
         return ApiResponse.success(Map.of(
-                "onlineDrivers",
-                em.createQuery("select count(d) from Driver d where d.school.id=:s and d.online=true", Long.class).setParameter("s", sid()).getSingleResult()));
+                "onlineDrivers", onlineDrivers,
+                "runningTrips", runningTrips,
+                "activeBuses", activeBuses,
+                "tracks", tracks));
     }
 
     @GetMapping("/api/v1/teacher/notices")

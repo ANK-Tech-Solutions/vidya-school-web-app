@@ -3,6 +3,7 @@ package com.schoolbus.dto.response;
 import com.schoolbus.entity.enums.TripStatus;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public record LiveTrackingResponse(
         Long tripId,
@@ -26,6 +27,6 @@ public record LiveTrackingResponse(
         Long studentStopId,
         String studentStopName,
         String busNumber,
-        String routeName
-) {
+        String routeName,
+        List<TrackingStopResponse> stops) {
 }

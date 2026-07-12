@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import type { RouteTrackStop } from "@/types/student-ops";
 
 export interface LiveMapProps {
   schoolLat?: number;
@@ -10,6 +11,9 @@ export interface LiveMapProps {
   busLat?: number;
   busLng?: number;
   busHeading?: number | null;
+  stops?: RouteTrackStop[];
+  currentStopId?: number | null;
+  studentStopId?: number | null;
   className?: string;
 }
 
