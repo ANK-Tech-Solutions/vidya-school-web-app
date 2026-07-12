@@ -5,6 +5,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { aiChatService } from "@/services/ai-chat.service";
 import { useAuth } from "@/hooks/use-auth";
+import { primaryRole } from "@/lib/constants";
 
 type Message = { role: "user" | "assistant"; text: string };
 const prompts = ["What is on my timetable?", "How do I request leave?", "Where can I find notices?"];
@@ -15,7 +16,7 @@ export function AiChatWidget() {
   const send = async (value = text) => {
     if (!value.trim() || sending) return;
     setMessages((m) => [...m, { role: "user", text: value }]); setText(""); setSending(true);
-    try { const data = await aiChatService.chat(value, user?.roles[0]); setMessages((m) => [...m, { role: "assistant", text: data.reply }]); }
+    try { const data = await aiChatService.chat(value, primaryRole(user?.roles) ?? undefined); setMessages((m) => [...m, { role: "assistant", text: data.reply }]); }
     catch { toast.error("School assistant is unavailable"); }
     finally { setSending(false); }
   };
