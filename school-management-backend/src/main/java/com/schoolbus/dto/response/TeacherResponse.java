@@ -1,0 +1,3 @@
+package com.schoolbus.dto.response;
+import com.schoolbus.entity.Teacher; import java.time.LocalDate;
+public record TeacherResponse(Long id,Long userId,String username,String email,String firstName,String lastName,String phone,String employeeCode,String department,String subjects,LocalDate joinDate,String phoneExtension,Boolean active){public static TeacherResponse from(Teacher t){var u=t.getUser();return new TeacherResponse(t.getId(),u.getId(),u.getUsername(),u.getEmail(),u.getFirstName(),u.getLastName(),u.getPhone(),t.getEmployeeCode(),t.getDepartment(),t.getSubjects(),t.getJoinDate(),t.getPhoneExtension(),t.getActive());}}

@@ -31,9 +31,12 @@ const schema = z.object({
   section: z.string().min(1),
   parentId: z.string().optional(),
   pickupAddress: z.string().optional(),
+  username: z.string().optional(),
+  email: z.string().email().optional().or(z.literal("")),
+  password: z.string().optional(),
 });
 type Values = z.infer<typeof schema>;
-const blank: Values = { studentCode: "", firstName: "", lastName: "", grade: "", section: "", parentId: "", pickupAddress: "" };
+const blank: Values = { studentCode: "", firstName: "", lastName: "", grade: "", section: "", parentId: "", pickupAddress: "", username: "", email: "", password: "" };
 
 export default function StudentsPage() {
   const [rows, setRows] = useState<Student[]>([]);
@@ -75,6 +78,9 @@ export default function StudentsPage() {
             section: student.section,
             parentId: student.parentId?.toString() ?? "",
             pickupAddress: student.pickupAddress ?? "",
+            username: "",
+            email: "",
+            password: "",
           }
         : blank,
     );
@@ -90,6 +96,9 @@ export default function StudentsPage() {
       section: values.section,
       pickupAddress: values.pickupAddress || undefined,
       parentId: values.parentId ? Number(values.parentId) : undefined,
+      username: values.username || undefined,
+      email: values.email || undefined,
+      password: values.password || undefined,
     };
     try {
       if (selected) await studentService.update(selected.id, payload);
@@ -199,11 +208,14 @@ export default function StudentsPage() {
               ["grade", "Grade"],
               ["section", "Section"],
               ["pickupAddress", "Pickup address"],
+              ["username", "Login username"],
+              ["email", "Login email"],
+              ["password", "Login password"],
             ] as const
           ).map(([name, label]) => (
             <div key={name} className={name === "pickupAddress" ? "sm:col-span-2" : ""}>
               <Label htmlFor={name}>{label}</Label>
-              <Input id={name} className="mt-1" {...form.register(name)} />
+              <Input id={name} type={name === "password" ? "password" : name === "email" ? "email" : "text"} className="mt-1" {...form.register(name)} />
               {form.formState.errors[name] && <p className="mt-1 text-xs text-red-500">{form.formState.errors[name]?.message}</p>}
             </div>
           ))}

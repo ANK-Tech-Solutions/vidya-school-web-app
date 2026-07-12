@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { API_URL, ROUTES } from "@/lib/constants";
 import { authService } from "@/services/auth.service";
 import { useAuthStore } from "@/stores/auth-store";
+import { BrandingSync } from "@/components/layout/branding-sync";
+import { useBrandingStore } from "@/stores/branding-store";
 
 const schema = z.object({
   username: z.string().min(1, "Username is required"),
@@ -49,6 +51,7 @@ function loginErrorMessage(error: unknown): { title: string; description: string
 export function LoginForm() {
   const [visible, setVisible] = useState(false);
   const { setAuth } = useAuthStore();
+  const branding = useBrandingStore();
   const {
     register,
     handleSubmit,
@@ -60,7 +63,7 @@ export function LoginForm() {
       const auth = await authService.login(values);
       setAuth(auth);
       const role = auth.user.roles[0];
-      const destination = role === "ADMIN" ? ROUTES.admin : role === "DRIVER" ? ROUTES.driver : ROUTES.student;
+      const destination = role === "ADMIN" ? ROUTES.admin : role === "DRIVER" ? ROUTES.driver : role === "TEACHER" ? ROUTES.teacher : ROUTES.student;
       window.location.assign(destination);
     } catch (error) {
       const message = loginErrorMessage(error);
@@ -69,7 +72,7 @@ export function LoginForm() {
   };
 
   return (
-    <motion.form
+    <><BrandingSync /><motion.form
       initial={{ opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.15 }}
@@ -77,6 +80,7 @@ export function LoginForm() {
       className="glass-panel w-full max-w-md rounded-3xl p-6 sm:p-8"
     >
       <div className="mb-7">
+        <div className="mb-5 flex items-center gap-3"><img src={branding.appIconUrl} alt="" className="h-10 w-10 rounded-xl object-cover" /><span className="font-display text-lg font-bold">{branding.appName}</span></div>
         <p className="text-xs font-bold uppercase tracking-[0.18em] text-[var(--primary)]">Welcome back</p>
         <h2 className="mt-2 font-display text-3xl font-bold tracking-tight">Sign in to your route</h2>
         <p className="mt-2 text-sm text-[var(--muted-foreground)]">Use your school account to continue.</p>
@@ -126,8 +130,8 @@ export function LoginForm() {
         </Button>
       </div>
       <p className="mt-6 rounded-xl bg-[var(--muted)] px-3 py-2.5 text-center text-xs text-[var(--muted-foreground)]">
-        Demo access: <strong className="text-[var(--foreground)]">admin / Password@123</strong>
+        Demo access: <strong className="text-[var(--foreground)]">admin or teacher1 / Password@123</strong>
       </p>
-    </motion.form>
+    </motion.form></>
   );
 }
