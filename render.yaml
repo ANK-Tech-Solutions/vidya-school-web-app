@@ -15,8 +15,7 @@ services:
     envVars:
       - key: SPRING_PROFILES_ACTIVE
         value: prod
-      - key: SERVER_PORT
-        value: 8080
+      # Let Render inject PORT (do not force SERVER_PORT=8080 — that breaks port detection).
       - key: DB_URL
         sync: false
       - key: DB_USERNAME
