@@ -3,5 +3,5 @@ import com.schoolbus.dto.response.*; import com.schoolbus.service.AdminDashboard
 @RestController @RequestMapping("/api/v1/admin/dashboard")
 public class AdminDashboardController {
  private final AdminDashboardService service; public AdminDashboardController(AdminDashboardService service){this.service=service;}
- @GetMapping("/stats") public ApiResponse<DashboardStatsResponse> stats(){return ApiResponse.success("Dashboard statistics retrieved",service.getStats());}
+ @GetMapping({"", "/stats"}) public ApiResponse<DashboardStatsResponse> stats(){return ApiResponse.success("Dashboard statistics retrieved",service.getStats());}
 }

@@ -9,6 +9,7 @@ import { Dialog } from "@/components/ui/dialog";
 import { PageHeader } from "@/components/layout/page-header";
 import { useDriverLocation } from "@/hooks/use-driver-location";
 import { driverOpsService } from "@/services/driver-ops.service";
+import { apiErrorMessage } from "@/lib/api-error";
 import type { Trip } from "@/types/driver-ops";
 
 type Action = "start" | "end" | "sos";
@@ -18,19 +19,56 @@ export default function DriverTripPage() {
   const [busy, setBusy] = useState(false);
   const location = useDriverLocation();
   useEffect(() => {
-    driverOpsService
-      .activeTrip()
-      .then(setTrip)
-      .catch(() => {
-        setTrip(null);
-      });
+    const timer = window.setTimeout(() => {
+      driverOpsService
+        .activeTrip()
+        .then(setTrip)
+        .catch(() => {
+          setTrip(null);
+        });
+    }, 0);
+    return () => window.clearTimeout(timer);
   }, []);
   const execute = async () => {
     if (!confirming) return;
     setBusy(true);
-    try { if (confirming === "start") { setTrip(await driverOpsService.startTrip()); toast.success("Trip started"); } else if (confirming === "end") { await driverOpsService.endTrip(); setTrip(null); toast.success("Trip ended"); } else { await driverOpsService.sos(); toast.success("SOS alert sent"); } setConfirming(null); } catch { toast.error("Action could not be completed"); } finally { setBusy(false); }
+    try {
+      if (confirming === "start") {
+        if (!location.enabled) {
+          const enableError = await location.enable();
+          if (enableError) {
+            toast.error(enableError);
+            return;
+          }
+        }
+        setTrip(await driverOpsService.startTrip());
+        toast.success("Trip started");
+      } else if (confirming === "end") {
+        await driverOpsService.endTrip();
+        setTrip(null);
+        toast.success("Trip ended");
+      } else {
+        await driverOpsService.sos();
+        toast.success("SOS alert sent");
+      }
+      setConfirming(null);
+    } catch (error) {
+      toast.error(apiErrorMessage(error, "Action could not be completed"));
+    } finally {
+      setBusy(false);
+    }
   };
-  const toggleLocation = async () => { const wasEnabled = location.enabled; const success = wasEnabled ? await location.disable().then(() => true) : await location.enable(); if (success) toast.success(wasEnabled ? "Location sharing disabled" : "Location sharing enabled"); };
+  const toggleLocation = async () => {
+    const wasEnabled = location.enabled;
+    if (wasEnabled) {
+      await location.disable();
+      toast.success("Location sharing disabled");
+      return;
+    }
+    const enableError = await location.enable();
+    if (enableError) toast.error(enableError);
+    else toast.success("Location sharing enabled");
+  };
   const fix = location.lastFix;
   return <><PageHeader eyebrow="Live operations" title="Trip control" description="Start your trip and keep live location sharing active." />
     <div className="grid gap-6 lg:grid-cols-[1.1fr_.9fr]"><Card className="p-6"><div className="flex items-center justify-between"><div><h2 className="font-display text-xl font-bold">Current trip</h2><p className="mt-1 text-sm text-[var(--muted-foreground)]">{trip?.routeName ?? "No active route"}</p></div><Badge>{trip?.status ?? "Not started"}</Badge></div><div className="mt-7 flex flex-wrap gap-3"><Button onClick={() => setConfirming(trip ? "end" : "start")} disabled={busy}>{trip ? "End trip" : "Start trip"}</Button><Button variant="outline" className="border-red-500/40 text-red-600 hover:bg-red-500/10" onClick={() => setConfirming("sos")} disabled={busy}><ShieldAlert size={17} />Send SOS</Button></div></Card>

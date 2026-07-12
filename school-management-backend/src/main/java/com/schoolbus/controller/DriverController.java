@@ -55,6 +55,12 @@ public class DriverController {
         return ApiResponse.success(driverService.todayStudents());
     }
 
+    /** Compatibility alias for older clients. */
+    @GetMapping("/students")
+    public ApiResponse<List<TodayStudentResponse>> studentsAlias() {
+        return studentsToday();
+    }
+
     @PostMapping("/location/enable")
     public ApiResponse<Void> enableLocation() {
         driverService.enableLocation();
@@ -73,19 +79,19 @@ public class DriverController {
         return ApiResponse.success("Location updated", null);
     }
 
-    @PostMapping("/trips/start")
+    @PostMapping({"/trips/start", "/trip/start"})
     public ResponseEntity<ApiResponse<TripResponse>> startTrip(@RequestBody(required = false) StartTripRequest request) {
         StartTripRequest body = request == null ? new StartTripRequest(null) : request;
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Trip started", driverService.startTrip(body)));
     }
 
-    @PostMapping("/trips/end")
+    @PostMapping({"/trips/end", "/trip/end"})
     public ApiResponse<TripResponse> endTrip() {
         return ApiResponse.success("Trip completed", driverService.endTrip());
     }
 
-    @PostMapping("/trips/sos")
+    @PostMapping({"/trips/sos", "/trip/sos"})
     public ApiResponse<Void> sos(@RequestBody(required = false) SosRequest request) {
         driverService.sendSos(request == null ? new SosRequest(null, null, null) : request);
         return ApiResponse.success("Emergency alert sent", null);
@@ -97,7 +103,7 @@ public class DriverController {
         return ApiResponse.success(PageResponse.from(driverService.tripHistory(PageRequest.of(page, size))));
     }
 
-    @GetMapping("/trips/active")
+    @GetMapping({"/trips/active", "/trip/current"})
     public ApiResponse<TripResponse> activeTrip() {
         return ApiResponse.success(driverService.activeTrip());
     }
