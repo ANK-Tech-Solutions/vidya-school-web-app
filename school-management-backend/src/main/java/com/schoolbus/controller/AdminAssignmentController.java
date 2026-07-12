@@ -1,2 +1,42 @@
-package com.schoolbus.controller;import com.schoolbus.dto.request.*;import com.schoolbus.dto.response.*;import com.schoolbus.service.AdminAssignmentService;import jakarta.validation.Valid;import org.springframework.data.domain.*;import org.springframework.http.*;import org.springframework.web.bind.annotation.*;
-@RestController @RequestMapping("/api/v1/admin/assignments") public class AdminAssignmentController{private final AdminAssignmentService s;public AdminAssignmentController(AdminAssignmentService s){this.s=s;}@GetMapping public ApiResponse<PageResponse<AssignmentResponse>> list(@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="20")int size){return ApiResponse.success(PageResponse.from(s.list(PageRequest.of(page,size))));}@PostMapping("/drivers")public ResponseEntity<ApiResponse<AssignmentResponse>> driver(@Valid @RequestBody AssignDriverRequest r){return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(s.driver(r)));}@PostMapping("/students")public ResponseEntity<ApiResponse<AssignmentResponse>> student(@Valid @RequestBody AssignStudentRequest r){return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(s.student(r)));}@PatchMapping("/{id}/deactivate")public ApiResponse<Void> deactivate(@PathVariable Long id){s.deactivate(id);return ApiResponse.success("Assignment deactivated",null);}}
+package com.schoolbus.controller;
+
+import com.schoolbus.dto.request.*;
+import com.schoolbus.dto.response.*;
+import com.schoolbus.service.AdminAssignmentService;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/admin/assignments")
+public class AdminAssignmentController {
+    private final AdminAssignmentService s;
+
+    public AdminAssignmentController(AdminAssignmentService s) {
+        this.s = s;
+    }
+
+    @GetMapping
+    public ApiResponse<PageResponse<AssignmentResponse>> list(
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "100") int size) {
+        return ApiResponse.success(PageResponse.from(s.list(PageRequest.of(page, size))));
+    }
+
+    @PostMapping("/drivers")
+    public ResponseEntity<ApiResponse<AssignmentResponse>> driver(@Valid @RequestBody AssignDriverRequest r) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(s.driver(r)));
+    }
+
+    @PostMapping("/students")
+    public ResponseEntity<ApiResponse<AssignmentResponse>> student(@Valid @RequestBody AssignStudentRequest r) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.success(s.student(r)));
+    }
+
+    @PatchMapping("/{id}/deactivate")
+    public ApiResponse<Void> deactivate(@PathVariable Long id, @RequestParam(required = false) String type) {
+        s.deactivate(id, type);
+        return ApiResponse.success("Assignment deactivated", null);
+    }
+}
