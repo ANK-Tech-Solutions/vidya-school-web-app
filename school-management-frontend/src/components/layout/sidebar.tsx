@@ -11,6 +11,7 @@ const nav = {
     { href: "/platform", label: "Overview", icon: Gauge },
     { href: "/platform/schools", label: "Schools", icon: Building2 },
     { href: "/platform/admins", label: "School admins", icon: UserCog },
+    { href: "/platform/vehicle-incharges", label: "Vehicle incharges", icon: Bus },
   ],
   ADMIN: [
     { href: "/admin", label: "Overview", icon: Gauge },

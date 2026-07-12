@@ -85,4 +85,13 @@ export const platformService = {
   createAdmin: (payload: PlatformAdminPayload) =>
     api.post<ApiResponse<PlatformAdmin>>(`${base}/admins`, clean(payload)).then((r) => r.data.data),
   deactivateAdmin: (id: number) => api.patch(`${base}/admins/${id}/deactivate`).then((r) => r.data.data),
+
+  listVehicleIncharges: () =>
+    api
+      .get<ApiResponse<PageResponse<PlatformAdmin>>>(`${base}/vehicle-incharges`, { params: { size: 100 } })
+      .then((r) => r.data.data),
+  createVehicleIncharge: (payload: PlatformAdminPayload) =>
+    api.post<ApiResponse<PlatformAdmin>>(`${base}/vehicle-incharges`, clean(payload)).then((r) => r.data.data),
+  deactivateVehicleIncharge: (id: number) =>
+    api.patch(`${base}/vehicle-incharges/${id}/deactivate`).then((r) => r.data.data),
 };

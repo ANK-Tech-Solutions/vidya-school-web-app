@@ -99,12 +99,49 @@ public class PlatformController {
     @PostMapping("/admins")
     @Transactional
     public ResponseEntity<ApiResponse<SchoolAdminResponse>> createAdmin(@Valid @RequestBody SchoolAdminRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success("School admin created", createSchoolUser(request, RoleType.ADMIN)));
+    }
+
+    @PatchMapping("/admins/{id}/deactivate")
+    @Transactional
+    public ApiResponse<Void> deactivateAdmin(@PathVariable Long id) {
+        deactivateSchoolUser(id, RoleType.ADMIN, "Admin not found", "User is not a school admin");
+        return ApiResponse.success("School admin deactivated", null);
+    }
+
+    @GetMapping("/vehicle-incharges")
+    @Transactional(readOnly = true)
+    public ApiResponse<PageResponse<SchoolAdminResponse>> listVehicleIncharges(
+            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "100") int size) {
+        return ApiResponse.success(PageResponse.from(
+                users.findByRole(RoleType.VEHICLE_INCHARGE, PageRequest.of(page, size)).map(SchoolAdminResponse::from)));
+    }
+
+    @PostMapping("/vehicle-incharges")
+    @Transactional
+    public ResponseEntity<ApiResponse<SchoolAdminResponse>> createVehicleIncharge(
+            @Valid @RequestBody SchoolAdminRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.success(
+                        "Vehicle incharge created", createSchoolUser(request, RoleType.VEHICLE_INCHARGE)));
+    }
+
+    @PatchMapping("/vehicle-incharges/{id}/deactivate")
+    @Transactional
+    public ApiResponse<Void> deactivateVehicleIncharge(@PathVariable Long id) {
+        deactivateSchoolUser(
+                id, RoleType.VEHICLE_INCHARGE, "Vehicle incharge not found", "User is not a vehicle incharge");
+        return ApiResponse.success("Vehicle incharge deactivated", null);
+    }
+
+    private SchoolAdminResponse createSchoolUser(SchoolAdminRequest request, RoleType roleType) {
         if (users.existsByUsername(request.username()) || users.existsByEmail(request.email())) {
             throw new BadRequestException("Username or email already exists");
         }
         School school = schools.findById(request.schoolId()).orElseThrow(() -> new ResourceNotFoundException("School not found"));
         if (!Boolean.TRUE.equals(school.getActive())) {
-            throw new BadRequestException("Cannot create admin for inactive school");
+            throw new BadRequestException("Cannot create user for inactive school");
         }
         User user = new User();
         user.setSchool(school);
@@ -117,21 +154,18 @@ public class PlatformController {
                 request.password() == null || request.password().isBlank() ? "Password@123" : request.password()));
         user.setActive(true);
         user.getRoles()
-                .add(roles.findByName(RoleType.ADMIN).orElseThrow(() -> new ResourceNotFoundException("ADMIN role not found")));
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success("School admin created", SchoolAdminResponse.from(users.save(user))));
+                .add(roles.findByName(roleType)
+                        .orElseThrow(() -> new ResourceNotFoundException(roleType.name() + " role not found")));
+        return SchoolAdminResponse.from(users.save(user));
     }
 
-    @PatchMapping("/admins/{id}/deactivate")
-    @Transactional
-    public ApiResponse<Void> deactivateAdmin(@PathVariable Long id) {
-        User user = users.findById(id).orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
-        boolean isAdmin = user.getRoles().stream().anyMatch(r -> r.getName() == RoleType.ADMIN);
-        if (!isAdmin) {
-            throw new BadRequestException("User is not a school admin");
+    private void deactivateSchoolUser(Long id, RoleType roleType, String notFoundMessage, String wrongRoleMessage) {
+        User user = users.findById(id).orElseThrow(() -> new ResourceNotFoundException(notFoundMessage));
+        boolean hasRole = user.getRoles().stream().anyMatch(r -> r.getName() == roleType);
+        if (!hasRole) {
+            throw new BadRequestException(wrongRoleMessage);
         }
         user.setActive(false);
-        return ApiResponse.success("School admin deactivated", null);
     }
 
     private void apply(School school, SchoolRequest request) {
