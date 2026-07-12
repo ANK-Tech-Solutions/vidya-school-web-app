@@ -141,7 +141,7 @@ public class StudentPortalService {
                 null, null, null, null, null, null, null,
                 student.getSchool().getLatitude(), student.getSchool().getLongitude(),
                 student.getPickupLatitude(), student.getPickupLongitude(),
-                null, null, null, null, null, null, null, null, null, null, null);
+                null, null, null, null, null, null, null, null, null, null, null, List.of());
     }
 
     private LiveTrackingResponse buildTracking(Student student, StudentBus assignment, Trip trip, TripLocation location) {
@@ -169,6 +169,8 @@ public class StudentPortalService {
         Double distance = safeDistance(lat, lon, targetLat, targetLon);
         Integer eta = GeoUtils.etaMinutes(distance, location == null ? null : location.getSpeed());
 
+        List<TrackingStopResponse> stops = orderedStops.stream().map(TrackingStopResponse::from).toList();
+
         return new LiveTrackingResponse(
                 trip == null ? null : trip.getId(),
                 lat,
@@ -191,7 +193,8 @@ public class StudentPortalService {
                 studentStop == null ? null : studentStop.getId(),
                 studentStop == null ? "Pickup point" : studentStop.getName(),
                 assignment.getBus().getBusNumber(),
-                assignment.getRoute() == null ? null : assignment.getRoute().getName());
+                assignment.getRoute() == null ? null : assignment.getRoute().getName(),
+                stops);
     }
 
     public Page<AttendanceResponse> attendance(Long studentId, Pageable pageable) {

@@ -53,6 +53,7 @@ function mapDashboard(raw: Record<string, unknown>): StudentDashboard {
 function mapTracking(raw: Record<string, unknown>): StudentTracking {
   const etaMinutes = raw.etaMinutes as number | null | undefined;
   const distance = raw.distanceRemaining as number | null | undefined;
+  const stopsRaw = Array.isArray(raw.stops) ? raw.stops : [];
   return {
     trip: raw.tripId
       ? {
@@ -73,11 +74,27 @@ function mapTracking(raw: Record<string, unknown>): StudentTracking {
     schoolLongitude: raw.schoolLongitude as number | undefined,
     pickupLatitude: raw.pickupLatitude as number | undefined,
     pickupLongitude: raw.pickupLongitude as number | undefined,
+    currentStopId: raw.currentStopId as number | undefined,
     currentStopName: raw.currentStopName as string | undefined,
+    currentStopOrder: raw.currentStopOrder as number | undefined,
+    nextStopId: raw.nextStopId as number | undefined,
     nextStopName: raw.nextStopName as string | undefined,
+    studentStopId: raw.studentStopId as number | undefined,
     studentStopName: raw.studentStopName as string | undefined,
     bus: raw.busNumber ? { busNumber: raw.busNumber as string } : null,
     route: raw.routeName ? { name: raw.routeName as string } : null,
+    stops: stopsRaw.map((item) => {
+      const stop = item as Record<string, unknown>;
+      return {
+        id: stop.id as number | undefined,
+        name: String(stop.name ?? "Stop"),
+        stopOrder: (stop.stopOrder as number | undefined) ?? (stop.order as number | undefined),
+        latitude: stop.latitude as number | undefined,
+        longitude: stop.longitude as number | undefined,
+        address: stop.address as string | undefined,
+        estimatedArrivalMins: stop.estimatedArrivalMins as number | undefined,
+      };
+    }),
   };
 }
 

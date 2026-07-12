@@ -75,7 +75,6 @@ const modules: Record<
     ],
   },
   notices: { title: "Notice board", description: "School-wide notices.", endpoint: "/api/v1/teacher/notices" },
-  tracking: { title: "Live tracking", description: "Fleet availability snapshot.", endpoint: "/api/v1/teacher/live-tracking-stats" },
   profile: { title: "Profile", description: "Your teaching account.", endpoint: "/api/v1/teacher/dashboard" },
 };
 

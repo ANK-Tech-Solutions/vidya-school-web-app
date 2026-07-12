@@ -131,6 +131,11 @@ export default function DriverPage() {
             </Button>
           </div>
           {location.error && <p className="mt-4 text-sm text-red-600">{location.error}</p>}
+          {location.enabled && (
+            <p className="mt-4 text-xs text-[var(--muted-foreground)]">
+              Location stays on while you switch screens or minimize the app. Tap Disable location to stop sharing.
+            </p>
+          )}
         </Card>
       </div>
     </>

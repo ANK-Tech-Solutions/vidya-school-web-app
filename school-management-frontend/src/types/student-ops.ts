@@ -59,6 +59,16 @@ export interface StudentDashboard {
   distanceRemainingKm?: number;
 }
 
+export interface RouteTrackStop {
+  id?: number;
+  name: string;
+  stopOrder?: number;
+  latitude?: number;
+  longitude?: number;
+  address?: string;
+  estimatedArrivalMins?: number;
+}
+
 export interface StudentTracking {
   trip?: StudentTrip | null;
   status?: string;
@@ -73,11 +83,16 @@ export interface StudentTracking {
   schoolLongitude?: number;
   pickupLatitude?: number;
   pickupLongitude?: number;
+  currentStopId?: number;
   currentStopName?: string;
+  currentStopOrder?: number;
+  nextStopId?: number;
   nextStopName?: string;
+  studentStopId?: number;
   studentStopName?: string;
   bus?: StudentBus | null;
   route?: StudentRoute | null;
+  stops?: RouteTrackStop[];
 }
 
 export interface AttendanceRecord {
