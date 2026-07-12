@@ -5,12 +5,19 @@ import { toast } from "sonner";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card } from "@/components/ui/card";
 import { inchargeService } from "@/services/incharge.service";
-import type { ReportSummary } from "@/types/reports";
+import type { ReportSummary, TripReportRow } from "@/types/reports";
 
 export default function InchargeReportsPage() {
   const [summary, setSummary] = useState<ReportSummary | null>(null);
+  const [trips, setTrips] = useState<TripReportRow[]>([]);
+
   useEffect(() => {
-    inchargeService.reportSummary().then(setSummary).catch(() => toast.error("Could not load report summary"));
+    Promise.all([inchargeService.reportSummary(), inchargeService.reportTrips()])
+      .then(([s, t]) => {
+        setSummary(s);
+        setTrips(t.content);
+      })
+      .catch(() => toast.error("Could not load transport reports"));
   }, []);
 
   const items = [
@@ -24,7 +31,7 @@ export default function InchargeReportsPage() {
 
   return (
     <>
-      <PageHeader eyebrow="Insights" title="Transport reports" description="Operational summary for the school fleet." />
+      <PageHeader eyebrow="Insights" title="Transport reports" description="Fleet performance and trip history for your school." />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
         {items.map((item) => (
           <Card key={item.label} className="p-5">
@@ -33,6 +40,39 @@ export default function InchargeReportsPage() {
           </Card>
         ))}
       </div>
+      <Card className="mt-6 overflow-x-auto">
+        <table className="w-full min-w-175 text-left text-sm">
+          <thead className="bg-[var(--muted)] text-xs uppercase text-[var(--muted-foreground)]">
+            <tr>
+              <th className="px-4 py-3">Trip</th>
+              <th>Driver</th>
+              <th>Bus / Route</th>
+              <th>Status</th>
+              <th>Distance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {trips.map((row) => (
+              <tr key={row.tripId}>
+                <td className="border-t border-[var(--border)] px-4 py-3">#{row.tripId}</td>
+                <td className="border-t border-[var(--border)] px-4 py-3">{row.driverName}</td>
+                <td className="border-t border-[var(--border)] px-4 py-3">
+                  {row.busNumber} · {row.routeName}
+                </td>
+                <td className="border-t border-[var(--border)] px-4 py-3">{row.status}</td>
+                <td className="border-t border-[var(--border)] px-4 py-3">{row.distanceKm ?? 0} km</td>
+              </tr>
+            ))}
+            {!trips.length && (
+              <tr>
+                <td className="px-4 py-8 text-[var(--muted-foreground)]" colSpan={5}>
+                  No trips found.
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </Card>
     </>
   );
 }
