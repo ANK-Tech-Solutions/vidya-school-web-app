@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { Toaster } from "sonner";
 import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { DEFAULT_BRANDING } from "@/lib/constants";
 
 const ui = Plus_Jakarta_Sans({
   variable: "--font-ui",
@@ -16,13 +17,13 @@ const display = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Vidya Bus | School Bus Management",
+  title: DEFAULT_BRANDING.appName,
   description: "Clearer, safer school journeys.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "Vidya Bus",
+    title: DEFAULT_BRANDING.appName,
   },
   icons: {
     apple: "/icons/icon-192.png",

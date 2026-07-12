@@ -6,6 +6,7 @@ describe("ROLES", () => {
     expect(ROLES).toEqual({
       ADMIN: "ADMIN",
       DRIVER: "DRIVER",
+      TEACHER: "TEACHER",
       STUDENT: "STUDENT",
       PARENT: "PARENT",
     });

@@ -89,6 +89,19 @@ public class AdminCrudServiceImpl implements AdminCrudService {
     public StudentResponse createStudent(StudentRequest r) {
         Student x = new Student();
         x.setSchool(school());
+        if (r.username() != null && !r.username().isBlank()) {
+            if (r.email() == null || r.email().isBlank()) throw new BadRequestException("Email is required when creating a student login");
+            check(r.username(), r.email());
+            User u = new User();
+            u.setSchool(school());
+            u.setUsername(r.username());
+            u.setEmail(r.email());
+            u.setFirstName(r.firstName());
+            u.setLastName(r.lastName());
+            u.setPasswordHash(encoder.encode(r.password() == null || r.password().isBlank() ? "Password@123" : r.password()));
+            u.getRoles().add(roles.findByName(RoleType.STUDENT).orElseThrow(() -> new ResourceNotFoundException("Role not found")));
+            x.setUser(users.save(u));
+        }
         copy(x, r);
         return StudentResponse.from(students.save(x));
     }

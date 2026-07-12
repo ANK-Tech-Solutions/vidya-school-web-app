@@ -33,6 +33,10 @@ public class School extends BaseEntity {
     @Column(nullable = false, length = 200)
     private String name;
 
+    @Column(name = "app_name", nullable = false, length = 200)
+    @Builder.Default
+    private String appName = "ANK-School-managment";
+
     @Column(length = 500)
     private String address;
 
@@ -63,6 +67,10 @@ public class School extends BaseEntity {
 
     @Column(name = "logo_url", length = 500)
     private String logoUrl;
+
+    @Column(name = "app_icon_url", nullable = false, length = 1000)
+    @Builder.Default
+    private String appIconUrl = "https://drive.google.com/uc?export=view&id=1oThTuOXW8fvrXUJHNDRBARkgc10Qg5lV";
 
     @Column(length = 50)
     @Builder.Default
