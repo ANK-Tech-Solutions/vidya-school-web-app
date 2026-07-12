@@ -28,10 +28,6 @@ export default function DriverRoutePage() {
         toast.error("Could not load your route");
       });
 
-  useEffect(() => {
-    void load();
-  }, []);
-
   const captureLocation = () => {
     if (!navigator.geolocation) {
       toast.error("Geolocation is not supported on this device");
@@ -46,6 +42,11 @@ export default function DriverRoutePage() {
       { enableHighAccuracy: true, timeout: 15_000 },
     );
   };
+
+  useEffect(() => {
+    void load();
+    captureLocation();
+  }, []);
 
   const addStop = async () => {
     if (!name.trim()) {

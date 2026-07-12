@@ -44,6 +44,13 @@ public class SecurityConfig {
                         .requestMatchers("/", "/api/v1/auth/**", "/actuator/health", "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**").permitAll()
                         .requestMatchers("/api/v1/public/**").permitAll()
                         .requestMatchers("/ws/**").permitAll()
+                        // Fleet ownership belongs to Vehicle Incharge only (not Admin).
+                        .requestMatchers(
+                                "/api/v1/admin/buses/**",
+                                "/api/v1/admin/routes/**",
+                                "/api/v1/admin/drivers/**",
+                                "/api/v1/admin/assignments/**")
+                        .denyAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/incharge/**").hasRole("VEHICLE_INCHARGE")
                         .requestMatchers("/api/v1/driver/**").hasRole("DRIVER")

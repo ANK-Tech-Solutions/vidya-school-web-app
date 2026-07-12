@@ -24,6 +24,7 @@ public class AdminCrudServiceImpl implements AdminCrudService {
     private final SchoolRepository schools;
     private final UserRepository users;
     private final RoleRepository roles;
+    private final RouteStopRepository routeStops;
     private final PasswordEncoder encoder;
 
     public AdminCrudServiceImpl(
@@ -35,6 +36,7 @@ public class AdminCrudServiceImpl implements AdminCrudService {
             SchoolRepository f,
             UserRepository g,
             RoleRepository h,
+            RouteStopRepository routeStops,
             PasswordEncoder i) {
         students = a;
         parents = b;
@@ -44,6 +46,7 @@ public class AdminCrudServiceImpl implements AdminCrudService {
         schools = f;
         users = g;
         roles = h;
+        this.routeStops = routeStops;
         encoder = i;
     }
 
@@ -353,6 +356,59 @@ public class AdminCrudServiceImpl implements AdminCrudService {
         routeEntity(id).setActive(false);
     }
 
+    @Override
+    @Transactional
+    public RouteStopResponse addRouteStop(Long routeId, RouteStopRequest r) {
+        Route route = routeEntity(routeId);
+        int nextOrder = route.getStops().stream().map(RouteStop::getStopOrder).filter(Objects::nonNull).max(Integer::compareTo).orElse(0) + 1;
+        RouteStop stop = RouteStop.builder()
+                .name(r.name())
+                .stopOrder(r.stopOrder() == null ? nextOrder : r.stopOrder())
+                .latitude(r.latitude())
+                .longitude(r.longitude())
+                .address(r.address())
+                .estimatedArrivalMins(r.estimatedArrivalMins())
+                .geofenceRadiusM(r.geofenceRadiusM() == null ? 100 : r.geofenceRadiusM())
+                .build();
+        route.addStop(stop);
+        return RouteStopResponse.from(routeStops.save(stop));
+    }
+
+    @Override
+    @Transactional
+    public RouteStopResponse updateRouteStop(Long routeId, Long stopId, RouteStopRequest r) {
+        Route route = routeEntity(routeId);
+        RouteStop stop = route.getStops().stream()
+                .filter(s -> s.getId().equals(stopId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Stop not found"));
+        stop.setName(r.name());
+        if (r.stopOrder() != null) stop.setStopOrder(r.stopOrder());
+        stop.setLatitude(r.latitude());
+        stop.setLongitude(r.longitude());
+        stop.setAddress(r.address());
+        if (r.estimatedArrivalMins() != null) stop.setEstimatedArrivalMins(r.estimatedArrivalMins());
+        if (r.geofenceRadiusM() != null) stop.setGeofenceRadiusM(r.geofenceRadiusM());
+        return RouteStopResponse.from(stop);
+    }
+
+    @Override
+    @Transactional
+    public void deleteRouteStop(Long routeId, Long stopId) {
+        Route route = routeEntity(routeId);
+        RouteStop stop = route.getStops().stream()
+                .filter(s -> s.getId().equals(stopId))
+                .findFirst()
+                .orElseThrow(() -> new ResourceNotFoundException("Stop not found"));
+        route.getStops().remove(stop);
+        stop.setRoute(null);
+        routeStops.delete(stop);
+        int order = 1;
+        for (RouteStop remaining : route.getStops().stream().sorted(Comparator.comparing(RouteStop::getStopOrder)).toList()) {
+            remaining.setStopOrder(order++);
+        }
+    }
+
     private void copy(Route x, RouteRequest r) {
         x.setName(r.name());
         x.setCode(r.code());
@@ -366,16 +422,18 @@ public class AdminCrudServiceImpl implements AdminCrudService {
         if (r.active() != null) x.setActive(r.active());
         x.clearStops();
         if (r.stops() != null) {
+            int i = 1;
             for (RouteStopRequest s : r.stops()) {
                 RouteStop z = new RouteStop();
                 z.setName(s.name());
-                z.setStopOrder(s.stopOrder());
+                z.setStopOrder(s.stopOrder() == null ? i : s.stopOrder());
                 z.setLatitude(s.latitude());
                 z.setLongitude(s.longitude());
                 z.setAddress(s.address());
                 z.setEstimatedArrivalMins(s.estimatedArrivalMins());
                 z.setGeofenceRadiusM(s.geofenceRadiusM());
                 x.addStop(z);
+                i++;
             }
         }
     }
