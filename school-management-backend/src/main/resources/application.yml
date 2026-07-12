@@ -57,7 +57,8 @@ spring:
       max-request-size: 10MB
 
 server:
-  # Render injects PORT; local/dev can use SERVER_PORT
+  # Render requires 0.0.0.0 and the $PORT env var (default 10000).
+  address: 0.0.0.0
   port: ${PORT:${SERVER_PORT:8080}}
   compression:
     enabled: true

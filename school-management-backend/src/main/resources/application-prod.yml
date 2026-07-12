@@ -29,3 +29,4 @@ logging:
     com.schoolbus: INFO
     org.flywaydb: INFO
     org.hibernate: WARN
+    org.springframework.boot.web.embedded.tomcat.TomcatWebServer: INFO

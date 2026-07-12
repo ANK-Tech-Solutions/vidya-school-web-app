@@ -64,7 +64,6 @@ jdbc:mysql://smart-home-db.XXXX.ap-southeast-2.rds.amazonaws.com:3306/vidya_db?u
 | Key | Example / notes |
 | --- | --- |
 | `SPRING_PROFILES_ACTIVE` | `prod` |
-| `SERVER_PORT` | `8080` |
 | `DB_URL` | Full JDBC URL to AWS RDS |
 | `DB_USERNAME` | RDS user |
 | `DB_PASSWORD` | RDS password |
@@ -77,6 +76,8 @@ jdbc:mysql://smart-home-db.XXXX.ap-southeast-2.rds.amazonaws.com:3306/vidya_db?u
 6. Confirm: `https://YOUR-RENDER-URL/actuator/health` → `{"status":"UP"}`
 
 > Free Render services **spin down** after idle time. First request after sleep can take 30–60s.
+>
+> If deploy fails with **“No open ports detected”**: in the Render dashboard, **delete** any `SERVER_PORT` / fixed `PORT` override and redeploy. The app must listen on Render’s injected `$PORT` at `0.0.0.0`. Logs should show `Binding HTTP server to 0.0.0.0:…` and `Tomcat started on port(s): …`.
 
 ---
 
