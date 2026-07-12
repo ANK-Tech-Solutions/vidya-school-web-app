@@ -128,7 +128,7 @@ export function LoginForm() {
         </Button>
       </div>
       <p className="mt-6 rounded-xl bg-[var(--muted)] px-3 py-2.5 text-center text-xs text-[var(--muted-foreground)]">
-        Demo access: <strong className="text-[var(--foreground)]">admin · vehicle1 · teacher1 · driver1 · parent1 / Password@123</strong>
+        Demo access: <strong className="text-[var(--foreground)]">superadmin · admin · vehicle1 · teacher1 · driver1 · parent1 / Password@123</strong>
       </p>
     </motion.form></>
   );

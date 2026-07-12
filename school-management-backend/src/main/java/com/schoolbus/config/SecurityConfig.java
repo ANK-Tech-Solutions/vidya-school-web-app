@@ -51,6 +51,7 @@ public class SecurityConfig {
                                 "/api/v1/admin/drivers/**",
                                 "/api/v1/admin/assignments/**")
                         .denyAll()
+                        .requestMatchers("/api/v1/platform/**").hasRole("SUPER_ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/incharge/**").hasRole("VEHICLE_INCHARGE")
                         .requestMatchers("/api/v1/driver/**").hasRole("DRIVER")

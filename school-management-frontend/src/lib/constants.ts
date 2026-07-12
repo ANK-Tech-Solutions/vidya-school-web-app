@@ -1,6 +1,7 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080";
 
 export const ROLES = {
+  SUPER_ADMIN: "SUPER_ADMIN",
   ADMIN: "ADMIN",
   DRIVER: "DRIVER",
   VEHICLE_INCHARGE: "VEHICLE_INCHARGE",
@@ -12,6 +13,7 @@ export const ROLES = {
 
 export const ROUTES = {
   login: "/login",
+  platform: "/platform",
   admin: "/admin",
   driver: "/driver",
   incharge: "/incharge",
@@ -24,6 +26,7 @@ export type Role = (typeof ROLES)[keyof typeof ROLES];
 
 /** Highest-priority role wins when a user has multiple roles. */
 export const ROLE_HOME_PRIORITY: Role[] = [
+  ROLES.SUPER_ADMIN,
   ROLES.ADMIN,
   ROLES.VEHICLE_INCHARGE,
   ROLES.TEACHER,
@@ -44,6 +47,8 @@ export function primaryRole(roles: readonly string[] | undefined): Role | null {
 export function homeRouteForRoles(roles: readonly string[] | undefined): string {
   const role = primaryRole(roles);
   switch (role) {
+    case ROLES.SUPER_ADMIN:
+      return ROUTES.platform;
     case ROLES.ADMIN:
       return ROUTES.admin;
     case ROLES.VEHICLE_INCHARGE:
