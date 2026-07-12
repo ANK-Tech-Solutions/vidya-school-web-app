@@ -1,12 +1,17 @@
 "use client";
 import Link from "next/link";
-import { Bell, BookOpen, Bus, BusFront, CalendarDays, ClipboardCheck, FileCheck2, Gauge, GraduationCap, History, IdCard, Landmark, Link2, MapPinned, Navigation, NotebookPen, Route, Settings, User, Users, UsersRound, ChartNoAxesCombined, WalletCards, School, Megaphone, ReceiptText, CircleDollarSign } from "lucide-react";
+import { Bell, BookOpen, Building2, Bus, BusFront, CalendarDays, ClipboardCheck, FileCheck2, Gauge, GraduationCap, History, IdCard, Landmark, Link2, MapPinned, Navigation, NotebookPen, Route, Settings, User, UserCog, Users, UsersRound, ChartNoAxesCombined, WalletCards, School, Megaphone, ReceiptText, CircleDollarSign } from "lucide-react";
 import { usePathname } from "next/navigation";
 import type { Role } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { useBrandingStore } from "@/stores/branding-store";
 
 const nav = {
+  SUPER_ADMIN: [
+    { href: "/platform", label: "Overview", icon: Gauge },
+    { href: "/platform/schools", label: "Schools", icon: Building2 },
+    { href: "/platform/admins", label: "School admins", icon: UserCog },
+  ],
   ADMIN: [
     { href: "/admin", label: "Overview", icon: Gauge },
     { href: "/admin/students", label: "Students", icon: GraduationCap },
@@ -94,7 +99,7 @@ export function Sidebar({ role, mobile = false }: { role: Role; mobile?: boolean
     <Link href="/" className="mb-10 flex items-center gap-3 px-2"><img src={branding.appIconUrl} alt="" className="h-10 w-10 rounded-xl object-cover shadow-lg shadow-teal-900/20" /><span className="font-display text-xl font-bold tracking-tight">{branding.appName}</span></Link>
     <nav aria-label="Main navigation" className="space-y-1">{nav[role].map(({ href, label, icon: Icon }) => {
       const active =
-        href === "/admin" || href === "/driver" || href === "/incharge" || href === "/teacher" || href === "/staff" || href === "/student"
+        href === "/platform" || href === "/admin" || href === "/driver" || href === "/incharge" || href === "/teacher" || href === "/staff" || href === "/student"
           ? pathname === href
           : pathname === href || pathname.startsWith(`${href}/`);
       return <Link key={label} href={href} className={cn("flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-semibold transition", active ? "bg-teal-500/12 text-[var(--primary)]" : "text-[var(--muted-foreground)] hover:bg-[var(--muted)] hover:text-[var(--foreground)]")}><Icon size={18} />{label}</Link>;
