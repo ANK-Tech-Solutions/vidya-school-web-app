@@ -110,31 +110,6 @@ public class PlatformController {
         return ApiResponse.success("School admin deactivated", null);
     }
 
-    @GetMapping("/vehicle-incharges")
-    @Transactional(readOnly = true)
-    public ApiResponse<PageResponse<SchoolAdminResponse>> listVehicleIncharges(
-            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "100") int size) {
-        return ApiResponse.success(PageResponse.from(
-                users.findByRole(RoleType.VEHICLE_INCHARGE, PageRequest.of(page, size)).map(SchoolAdminResponse::from)));
-    }
-
-    @PostMapping("/vehicle-incharges")
-    @Transactional
-    public ResponseEntity<ApiResponse<SchoolAdminResponse>> createVehicleIncharge(
-            @Valid @RequestBody SchoolAdminRequest request) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.success(
-                        "Vehicle incharge created", createSchoolUser(request, RoleType.VEHICLE_INCHARGE)));
-    }
-
-    @PatchMapping("/vehicle-incharges/{id}/deactivate")
-    @Transactional
-    public ApiResponse<Void> deactivateVehicleIncharge(@PathVariable Long id) {
-        deactivateSchoolUser(
-                id, RoleType.VEHICLE_INCHARGE, "Vehicle incharge not found", "User is not a vehicle incharge");
-        return ApiResponse.success("Vehicle incharge deactivated", null);
-    }
-
     private SchoolAdminResponse createSchoolUser(SchoolAdminRequest request, RoleType roleType) {
         if (users.existsByUsername(request.username()) || users.existsByEmail(request.email())) {
             throw new BadRequestException("Username or email already exists");

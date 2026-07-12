@@ -26,4 +26,11 @@ public interface UserRepository extends JpaRepository<User, Long> {
             value = "select distinct u from User u join u.roles r where r.name = :role",
             countQuery = "select count(distinct u) from User u join u.roles r where r.name = :role")
     Page<User> findByRole(@Param("role") RoleType role, Pageable pageable);
+
+    @Query(
+            value = "select distinct u from User u join u.roles r where u.school.id = :schoolId and r.name = :role",
+            countQuery =
+                    "select count(distinct u) from User u join u.roles r where u.school.id = :schoolId and r.name = :role")
+    Page<User> findBySchoolIdAndRole(
+            @Param("schoolId") Long schoolId, @Param("role") RoleType role, Pageable pageable);
 }

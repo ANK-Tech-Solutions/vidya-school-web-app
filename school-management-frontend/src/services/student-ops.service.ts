@@ -4,7 +4,6 @@ import type { PageResponse } from "@/types/common";
 import type {
   AttendanceRecord,
   StudentBus,
-  StudentChild,
   StudentDashboard,
   StudentDriver,
   StudentNotification,
@@ -133,8 +132,8 @@ export const studentOpsService = {
     pageContent(
       await get<PageResponse<Record<string, unknown>>>("/trips/history", studentId, { page: 0, size: 50 }),
     ).map(mapTrip),
-  getNotifications: async (_studentId?: number) =>
-    pageContent(await get<PageResponse<StudentNotification>>("/notifications", undefined, { page: 0, size: 50 })),
+  getNotifications: async (studentId?: number) =>
+    pageContent(await get<PageResponse<StudentNotification>>("/notifications", studentId, { page: 0, size: 50 })),
   markNotificationRead: (notificationId: number) =>
     api.patch<ApiResponse<void>>(`${base}/notifications/${notificationId}/read`).then((response) => response.data.data),
 };

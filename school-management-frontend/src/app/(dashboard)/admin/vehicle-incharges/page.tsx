@@ -8,14 +8,12 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  platformService,
-  type PlatformAdmin,
-  type PlatformAdminPayload,
-  type PlatformSchool,
-} from "@/services/platform.service";
+  vehicleInchargeService,
+  type VehicleIncharge,
+  type VehicleInchargePayload,
+} from "@/services/vehicle-incharge.service";
 
-const blank: PlatformAdminPayload = {
-  schoolId: 0,
+const blank: VehicleInchargePayload = {
   username: "",
   email: "",
   password: "",
@@ -24,36 +22,35 @@ const blank: PlatformAdminPayload = {
   phone: "",
 };
 
-export default function PlatformVehicleInchargesPage() {
-  const [rows, setRows] = useState<PlatformAdmin[]>([]);
-  const [schools, setSchools] = useState<PlatformSchool[]>([]);
-  const [form, setForm] = useState<PlatformAdminPayload>(blank);
+export default function AdminVehicleInchargesPage() {
+  const [rows, setRows] = useState<VehicleIncharge[]>([]);
+  const [form, setForm] = useState<VehicleInchargePayload>(blank);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const load = useCallback(() => {
     setLoading(true);
-    Promise.all([platformService.listVehicleIncharges(), platformService.listSchools()])
-      .then(([page, schoolPage]) => {
-        setRows(page.content);
-        setSchools(schoolPage.content.filter((s) => s.active));
-      })
+    vehicleInchargeService
+      .list()
+      .then((page) => setRows(page.content))
       .catch(() => toast.error("Could not load vehicle incharges"))
       .finally(() => setLoading(false));
   }, []);
 
   useEffect(() => {
-    load();
+    let active = true;
+    void Promise.resolve().then(() => {
+      if (active) load();
+    });
+    return () => {
+      active = false;
+    };
   }, [load]);
 
   const save = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.schoolId) {
-      toast.error("Select a school");
-      return;
-    }
     try {
-      await platformService.createVehicleIncharge({
+      await vehicleInchargeService.create({
         ...form,
         password: form.password?.trim() ? form.password : undefined,
       });
@@ -68,7 +65,7 @@ export default function PlatformVehicleInchargesPage() {
 
   const deactivate = async (id: number) => {
     try {
-      await platformService.deactivateVehicleIncharge(id);
+      await vehicleInchargeService.deactivate(id);
       toast.success("Vehicle incharge deactivated");
       load();
     } catch {
@@ -79,9 +76,9 @@ export default function PlatformVehicleInchargesPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Platform"
+        eyebrow="People"
         title="Vehicle incharges"
-        description="Provision fleet managers for each school. They sign in at the /incharge portal."
+        description="Assign fleet managers for your school. They sign in at the /incharge portal."
       />
       <div className="mb-5 flex justify-end">
         <Button onClick={() => setOpen(!open)}>{open ? "Cancel" : "Add vehicle incharge"}</Button>
@@ -90,23 +87,6 @@ export default function PlatformVehicleInchargesPage() {
       {open && (
         <Card className="mb-6 p-5">
           <form onSubmit={save} className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2 sm:col-span-2">
-              <Label htmlFor="schoolId">School</Label>
-              <select
-                id="schoolId"
-                required
-                className="flex h-11 w-full rounded-xl border border-[var(--border)] bg-[var(--background)] px-3 text-sm"
-                value={form.schoolId || ""}
-                onChange={(e) => setForm({ ...form, schoolId: Number(e.target.value) })}
-              >
-                <option value="">Select school</option>
-                {schools.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name} ({s.code})
-                  </option>
-                ))}
-              </select>
-            </div>
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input
@@ -181,9 +161,7 @@ export default function PlatformVehicleInchargesPage() {
                     {row.firstName} {row.lastName}{" "}
                     <span className="text-xs font-semibold text-[var(--primary)]">@{row.username}</span>
                   </p>
-                  <p className="text-sm text-[var(--muted-foreground)]">
-                    {row.schoolName ?? "School"} ({row.schoolCode ?? "—"}) · {row.email}
-                  </p>
+                  <p className="text-sm text-[var(--muted-foreground)]">{row.email}</p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span
@@ -202,9 +180,7 @@ export default function PlatformVehicleInchargesPage() {
               </div>
             ))
           ) : (
-            <p className="p-10 text-center text-sm text-[var(--muted-foreground)]">
-              No vehicle incharges yet. Create a school first, then add a fleet manager.
-            </p>
+            <p className="p-10 text-center text-sm text-[var(--muted-foreground)]">No vehicle incharges yet.</p>
           )}
         </div>
       </Card>
