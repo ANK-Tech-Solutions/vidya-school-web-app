@@ -47,6 +47,7 @@ export function ScanBoardDialog({
   const inputRef = useRef<HTMLInputElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const nfcAbort = useRef<AbortController | null>(null);
+  const recentRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -72,10 +73,6 @@ export function ScanBoardDialog({
   );
 
   const startCamera = useCallback(async () => {
-    if (!hasBarcodeDetector()) {
-      setStatus("This device/browser has no camera QR scanner. Use a handheld scanner or type the code.");
-      return;
-    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: { ideal: "environment" } },
@@ -83,7 +80,6 @@ export function ScanBoardDialog({
       });
       streamRef.current = stream;
       setCameraOn(true);
-      setStatus("Point the camera at the student's QR code.");
     } catch {
       setStatus("Could not open the camera. Check permissions or type the code instead.");
     }
@@ -99,7 +95,7 @@ export function ScanBoardDialog({
   }, [cameraOn]);
 
   useEffect(() => {
-    if (!cameraOn) return;
+    if (!cameraOn || method !== "QR" || !hasBarcodeDetector()) return;
     const ctor = (window as unknown as { BarcodeDetector: BarcodeDetectorCtor }).BarcodeDetector;
     const detector = new ctor({ formats: ["qr_code"] });
     let active = true;
@@ -108,11 +104,13 @@ export function ScanBoardDialog({
       if (!active || !video || video.readyState < 2) return;
       try {
         const results = await detector.detect(video);
-        if (results.length && results[0].rawValue) {
-          active = false;
-          stopCamera();
-          void submit(results[0].rawValue, "QR");
-        }
+        const value = results[0]?.rawValue?.trim();
+        if (!value) return;
+        // Keep the camera live; de-dupe the same code so one card boards one student.
+        const now = Date.now();
+        if (recentRef.current.code === value && now - recentRef.current.at < 3500) return;
+        recentRef.current = { code: value, at: now };
+        void submit(value, "QR");
       } catch {
         /* transient decode error, keep scanning */
       }
@@ -121,7 +119,7 @@ export function ScanBoardDialog({
       active = false;
       clearInterval(timer);
     };
-  }, [cameraOn, stopCamera, submit]);
+  }, [cameraOn, method, submit]);
 
   const startNfc = useCallback(async () => {
     if (!hasNfc()) {
@@ -159,7 +157,14 @@ export function ScanBoardDialog({
     stopCamera();
     nfcAbort.current?.abort();
     nfcAbort.current = null;
-    if (method === "QR" && hasBarcodeDetector()) void startCamera();
+    recentRef.current = { code: "", at: 0 };
+    setStatus(null);
+    if (method === "QR" || method === "FACE") {
+      void startCamera();
+      if (method === "QR" && !hasBarcodeDetector()) {
+        setStatus("This browser can't decode QR from the camera. Use a handheld scanner or type the code.");
+      }
+    }
     if (method === "NFC" && hasNfc()) void startNfc();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [method, open]);
@@ -192,7 +197,7 @@ export function ScanBoardDialog({
 
       <p className="mt-4 text-sm text-[var(--muted-foreground)]">{active.hint}</p>
 
-      {method === "QR" ? (
+      {method === "QR" || method === "FACE" ? (
         <div className="relative mt-4 h-56 overflow-hidden rounded-2xl border border-[var(--border)] bg-black/80">
           <video
             ref={videoRef}
@@ -208,11 +213,16 @@ export function ScanBoardDialog({
               Camera off
             </div>
           ) : null}
+          {method === "FACE" && cameraOn ? (
+            <span className="absolute inset-x-0 bottom-0 bg-black/55 px-3 py-1.5 text-center text-xs text-white/80">
+              Preview only — enter the code from your face terminal below to board
+            </span>
+          ) : null}
         </div>
       ) : null}
 
       <div className="mt-4 flex flex-wrap gap-2">
-        {method === "QR" ? (
+        {method === "QR" || method === "FACE" ? (
           <Button type="button" variant="outline" onClick={() => (cameraOn ? stopCamera() : startCamera())}>
             {cameraOn ? <CameraOff size={16} /> : <Camera size={16} />}
             {cameraOn ? "Stop camera" : "Start camera"}
