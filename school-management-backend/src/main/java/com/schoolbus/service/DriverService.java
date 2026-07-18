@@ -24,4 +24,6 @@ public interface DriverService {
     Page<TripResponse> tripHistory(Pageable pageable);
     TripResponse activeTrip();
     RouteStopResponse addStopFromLocation(DriverAddStopRequest request);
+    void markBoarding(Long studentId, boolean present);
+    ScanBoardingResponse scanBoarding(String code, String method);
 }

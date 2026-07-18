@@ -9,5 +9,8 @@ public enum NotificationType {
     EMERGENCY,
     GENERAL,
     ATTENDANCE,
-    SYSTEM
+    SYSTEM,
+    GEOFENCE,
+    OVERSPEED,
+    NO_SHOW
 }

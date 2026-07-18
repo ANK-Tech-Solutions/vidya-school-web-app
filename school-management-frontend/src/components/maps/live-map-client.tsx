@@ -69,6 +69,7 @@ export default function LiveMapClient({
   stops = [],
   currentStopId,
   studentStopId,
+  pathPositions = [],
   className,
 }: LiveMapProps) {
   const schoolPosition = schoolLat !== undefined && schoolLng !== undefined ? ([schoolLat, schoolLng] as [number, number]) : null;
@@ -82,7 +83,7 @@ export default function LiveMapClient({
         .map((s) => [Number(s.latitude), Number(s.longitude)] as [number, number]),
     [stops],
   );
-  const points = [schoolPosition, pickupPosition, busPosition, ...stopPositions].filter(
+  const points = [schoolPosition, pickupPosition, busPosition, ...stopPositions, ...pathPositions].filter(
     (point): point is [number, number] => point !== null,
   );
 
@@ -106,7 +107,8 @@ export default function LiveMapClient({
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
       />
       <FitToMarkers points={points} />
-      {stopPositions.length > 1 && <Polyline positions={stopPositions} pathOptions={{ color: "#0f766e", weight: 4, opacity: 0.7 }} />}
+      {pathPositions.length > 1 && <Polyline positions={pathPositions} pathOptions={{ color: "#2563eb", weight: 4, opacity: 0.8 }} />}
+      {stopPositions.length > 1 && <Polyline positions={stopPositions} pathOptions={{ color: "#0f766e", weight: 4, opacity: 0.7, dashArray: pathPositions.length > 1 ? "6 8" : undefined }} />}
       {stops.map((stop, index) => {
         if (stop.latitude == null || stop.longitude == null) return null;
         const kind = stop.id === currentStopId ? "current" : stop.id === studentStopId ? "yours" : "normal";

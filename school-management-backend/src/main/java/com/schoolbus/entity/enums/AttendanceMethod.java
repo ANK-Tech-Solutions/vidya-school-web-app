@@ -4,6 +4,7 @@ public enum AttendanceMethod {
     QR,
     RFID,
     FACE,
+    FINGERPRINT,
     MANUAL,
     GEOFENCE
 }

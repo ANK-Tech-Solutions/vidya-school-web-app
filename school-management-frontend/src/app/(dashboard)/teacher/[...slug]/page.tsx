@@ -56,11 +56,6 @@ const modules: Record<
       { name: "priority", label: "Priority" },
     ],
   },
-  evaluate: {
-    title: "Evaluate",
-    description: "Exams available for result entry. Use student ID when posting marks from admin exams.",
-    endpoint: "/api/v1/teacher/exams",
-  },
   leave: {
     title: "Leave requests",
     description: "Request leave and track approvals.",
