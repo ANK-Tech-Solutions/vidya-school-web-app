@@ -61,6 +61,8 @@ export interface TodayStudent {
   pickupTime?: string;
   pickupStatus?: string;
   guardianPhone?: string;
+  studentCode?: string;
+  photoUrl?: string;
 }
 
 export interface Trip {

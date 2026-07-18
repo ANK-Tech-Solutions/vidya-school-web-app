@@ -1,13 +1,28 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Camera, CameraOff, Fingerprint, Keyboard, Nfc, QrCode, ScanFace } from "lucide-react";
+import { Camera, CameraOff, Check, Fingerprint, Keyboard, Nfc, QrCode, ScanFace } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { buildFaceMatcher, matchFace } from "@/lib/face-recognition";
 
 export type ScanMethod = "QR" | "NFC" | "FACE" | "FINGERPRINT" | "MANUAL";
+
+export interface ScanResult {
+  studentId: number;
+  name: string;
+  method: string;
+  alreadyBoarded: boolean;
+}
+
+export interface ScanCandidate {
+  studentId: number;
+  name: string;
+  studentCode?: string;
+  photoUrl?: string;
+}
 
 type BarcodeDetectorLike = { detect: (source: CanvasImageSource) => Promise<{ rawValue: string }[]> };
 type BarcodeDetectorCtor = new (options?: { formats?: string[] }) => BarcodeDetectorLike;
@@ -21,7 +36,7 @@ type NdefReaderCtor = new () => NdefReaderLike;
 const METHODS: { id: ScanMethod; label: string; icon: typeof QrCode; hint: string }[] = [
   { id: "QR", label: "QR code", icon: QrCode, hint: "Scan a student ID card QR with the camera, a handheld scanner, or type the code." },
   { id: "NFC", label: "NFC / RFID", icon: Nfc, hint: "Tap the student's NFC/RFID card. Reader devices that type the tag also work." },
-  { id: "FACE", label: "Face", icon: ScanFace, hint: "Use a face-recognition terminal that outputs the matched student's code below." },
+  { id: "FACE", label: "Face", icon: ScanFace, hint: "Point the camera at the student's face — they'll board automatically once recognised." },
   { id: "FINGERPRINT", label: "Fingerprint", icon: Fingerprint, hint: "Use a fingerprint terminal that outputs the matched student's code below." },
   { id: "MANUAL", label: "Manual", icon: Keyboard, hint: "Type or paste a student code, QR value, or tag manually." },
 ];
@@ -33,21 +48,26 @@ export function ScanBoardDialog({
   open,
   onClose,
   onSubmit,
+  students = [],
 }: {
   open: boolean;
   onClose: () => void;
-  onSubmit: (code: string, method: ScanMethod) => Promise<void>;
+  onSubmit: (code: string, method: ScanMethod) => Promise<ScanResult | null>;
+  students?: ScanCandidate[];
 }) {
   const [method, setMethod] = useState<ScanMethod>("QR");
   const [code, setCode] = useState("");
   const [status, setStatus] = useState<string | null>(null);
   const [cameraOn, setCameraOn] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [lastResult, setLastResult] = useState<ScanResult | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const nfcAbort = useRef<AbortController | null>(null);
   const recentRef = useRef<{ code: string; at: number }>({ code: "", at: 0 });
+  const matcherRef = useRef<Awaited<ReturnType<typeof buildFaceMatcher>>>(null);
+  const submitRef = useRef<(value: string, via: ScanMethod) => Promise<void>>(async () => {});
 
   const stopCamera = useCallback(() => {
     streamRef.current?.getTracks().forEach((track) => track.stop());
@@ -61,16 +81,23 @@ export function ScanBoardDialog({
       if (!trimmed || busy) return;
       setBusy(true);
       try {
-        await onSubmit(trimmed, via);
-        setCode("");
-        setStatus(null);
+        const result = await onSubmit(trimmed, via);
+        if (result) {
+          setLastResult(result);
+          setCode("");
+          setStatus(null);
+          // Previous QR behaviour: stop the camera once a student is successfully boarded.
+          if (via === "QR") stopCamera();
+        }
       } finally {
         setBusy(false);
         inputRef.current?.focus();
       }
     },
-    [busy, onSubmit],
+    [busy, onSubmit, stopCamera],
   );
+
+  submitRef.current = submit;
 
   const startCamera = useCallback(async () => {
     try {
@@ -121,6 +148,65 @@ export function ScanBoardDialog({
     };
   }, [cameraOn, method, submit]);
 
+  // Build a face matcher from enrolled student photos when Face mode's camera is on.
+  useEffect(() => {
+    if (!open || method !== "FACE" || !cameraOn) {
+      matcherRef.current = null;
+      return;
+    }
+    let active = true;
+    const faces = students
+      .filter((s) => s.photoUrl && (s.studentCode || s.studentId))
+      .map((s) => ({ label: s.studentCode ?? String(s.studentId), photoUrl: s.photoUrl as string }));
+    if (!faces.length) {
+      setStatus("No student photos on file — face recognition needs enrolled photos.");
+      return;
+    }
+    setStatus("Loading face recogniser…");
+    buildFaceMatcher(faces)
+      .then((matcher) => {
+        if (!active) return;
+        matcherRef.current = matcher;
+        setStatus(
+          matcher
+            ? "Point the camera at the student's face."
+            : "Couldn't read any enrolled faces (photos must be public / CORS-enabled).",
+        );
+      })
+      .catch(() => {
+        if (active) setStatus("Face recognition failed to load on this device.");
+      });
+    return () => {
+      active = false;
+      matcherRef.current = null;
+    };
+  }, [open, method, cameraOn, students]);
+
+  // Recognition loop: match the live face and board the recognised student.
+  useEffect(() => {
+    if (!open || method !== "FACE" || !cameraOn) return;
+    let active = true;
+    const timer = setInterval(async () => {
+      const video = videoRef.current;
+      const matcher = matcherRef.current;
+      if (!active || !video || !matcher || video.readyState < 2) return;
+      try {
+        const label = await matchFace(video, matcher);
+        if (!active || !label) return;
+        const now = Date.now();
+        if (recentRef.current.code === label && now - recentRef.current.at < 4000) return;
+        recentRef.current = { code: label, at: now };
+        void submitRef.current(label, "FACE");
+      } catch {
+        /* keep trying on transient detection errors */
+      }
+    }, 800);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [open, method, cameraOn]);
+
   const startNfc = useCallback(async () => {
     if (!hasNfc()) {
       setStatus("Web NFC is not available here (Chrome on Android only). Tap-readers that type the tag still work.");
@@ -147,6 +233,8 @@ export function ScanBoardDialog({
       nfcAbort.current = null;
       setStatus(null);
       setCode("");
+      setLastResult(null);
+      recentRef.current = { code: "", at: 0 };
       return;
     }
     inputRef.current?.focus();
@@ -221,7 +309,7 @@ export function ScanBoardDialog({
         </div>
       ) : null}
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         {method === "QR" || method === "FACE" ? (
           <Button type="button" variant="outline" onClick={() => (cameraOn ? stopCamera() : startCamera())}>
             {cameraOn ? <CameraOff size={16} /> : <Camera size={16} />}
@@ -233,6 +321,12 @@ export function ScanBoardDialog({
             <Nfc size={16} />
             Scan NFC
           </Button>
+        ) : null}
+        {lastResult ? (
+          <span className="inline-flex items-center gap-1.5 rounded-xl bg-teal-500/15 px-3 py-2 text-sm font-semibold text-[var(--primary)]">
+            <Check size={16} />
+            {lastResult.alreadyBoarded ? `${lastResult.name} already on board` : `${lastResult.name} marked boarded`}
+          </span>
         ) : null}
       </div>
 

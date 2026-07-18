@@ -62,12 +62,18 @@ Portal: `/driver` · Sign in as `driver1` / `Password@123`.
 
 Tap **Scan to board** to open the scanner. Pick a method, then present the student's ID:
 
-- **QR code** — scan the ID card QR with the phone camera (where supported) or a handheld scanner.
+- **QR code** — scan the ID card QR with the phone camera (Chromium/Android) or a handheld scanner. On a
+  successful read the student is boarded, a **"<name> marked boarded"** confirmation appears next to the camera
+  button, and the camera stops. Start it again for the next student.
 - **NFC / RFID** — tap the student's card (Web NFC on Chrome for Android), or use a tap reader.
-- **Face / Fingerprint** — use a biometric terminal that outputs the matched student's code.
+- **Face** — point the camera at the student's face; they board **automatically once recognised** against their
+  enrolled photo. Requires each student to have a photo on file (reachable by the browser); if none are enrolled
+  the scanner tells you so. Face models are served from `/public/models` (bundled, no external calls).
+- **Fingerprint** — use a fingerprint terminal that outputs the matched student's code into the box.
 - **Manual** — type or paste the student code / QR value / tag.
 
 Any hardware scanner that "types" the scanned value into the focused box also works. The system matches the code
-against the student's QR value, RFID/NFC tag, or student code and boards them, recording the method used.
+against the student's QR value, RFID/NFC tag, or student code and boards them, recording the method used. Every
+successful board shows the **marked** confirmation chip beside the camera controls.
 
 Parents also get an automatic **"bus arriving"** alert the moment your bus enters their stop's geofence.

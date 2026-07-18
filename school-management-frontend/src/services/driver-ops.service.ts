@@ -99,6 +99,8 @@ function mapStudent(raw: Record<string, unknown>): TodayStudent {
     grade: raw.grade as string | undefined,
     section: raw.section as string | undefined,
     stopName: raw.stopName as string | undefined,
+    studentCode: raw.studentCode as string | undefined,
+    photoUrl: raw.photoUrl as string | undefined,
     pickupStatus: "Scheduled",
   };
 }

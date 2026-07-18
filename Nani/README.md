@@ -83,4 +83,4 @@ A Cursor rule at `.cursor/rules/keep-nani-in-sync.mdc` reminds future edits to h
 - Fees & payments gateway, payroll, timetable builder UI.
 - Bulk import/export, native driver app, i18n/accessibility, automated E2E, data-retention jobs.
 
-_Last synced with code: teacher-marked attendance is now the official record (bus boarding shown separately), plus driver scan-to-board (QR / NFC-RFID / face / fingerprint / manual). Prior: geofence/overspeed/no-show, trip replay, audit log, analytics, exam grading._
+_Last synced with code: driver scan-to-board now does live camera QR (with a "marked" confirmation chip) and real in-browser face recognition against enrolled student photos (`@vladmandic/face-api`, models in `/public/models`); teacher-marked attendance is the official record (bus boarding shown separately). Prior: geofence/overspeed/no-show, trip replay, audit log, analytics, exam grading._

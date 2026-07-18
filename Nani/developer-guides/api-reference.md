@@ -52,7 +52,7 @@ Buses, routes, drivers, assignments, tracking, and reports scoped to the incharg
 
 | Method | Path | Description |
 | --- | --- | --- |
-| GET | `/driver/students/today` (alias `/driver/students`) | Today's manifest |
+| GET | `/driver/students/today` (alias `/driver/students`) | Today's manifest (incl. `studentCode` + `photoUrl` for scan/face matching) |
 | POST | `/driver/trips/start` (alias `/driver/trip/start`) | Start trip |
 | POST | `/driver/trips/end` (alias `/driver/trip/end`) | End trip |
 | POST | `/driver/trips/sos` (alias `/driver/trip/sos`) | Raise SOS |
