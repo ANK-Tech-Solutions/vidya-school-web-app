@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, GraduationCap, ScanLine, Users, X } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -48,10 +48,25 @@ export default function DriverStudentsPage() {
       setStatus((prev) => ({ ...prev, [result.studentId]: "boarded" }));
       if (result.alreadyBoarded) toast.info(`${result.name} was already on board`);
       else toast.success(`${result.name} boarded (${result.method})`);
+      return result;
     } catch (error) {
       toast.error(apiErrorMessage(error, "No match. Start a trip and check the code."));
+      return null;
     }
   };
+
+  const candidates = useMemo(
+    () =>
+      students
+        .filter((student) => student.studentId != null)
+        .map((student) => ({
+          studentId: student.studentId as number,
+          name: (student.name ?? `${student.firstName ?? ""} ${student.lastName ?? ""}`.trim()) || "Student",
+          studentCode: student.studentCode,
+          photoUrl: student.photoUrl,
+        })),
+    [students],
+  );
 
   return (
     <>
@@ -66,7 +81,7 @@ export default function DriverStudentsPage() {
           Scan to board
         </Button>
       </div>
-      <ScanBoardDialog open={scanOpen} onClose={() => setScanOpen(false)} onSubmit={handleScan} />
+      <ScanBoardDialog open={scanOpen} onClose={() => setScanOpen(false)} onSubmit={handleScan} students={candidates} />
       <Card className="overflow-hidden">
         <div className="flex items-center justify-between border-b border-[var(--border)] p-5">
           <div className="flex items-center gap-3">
