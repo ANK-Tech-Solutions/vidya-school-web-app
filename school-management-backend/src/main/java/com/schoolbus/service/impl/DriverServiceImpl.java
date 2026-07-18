@@ -7,9 +7,11 @@ import com.schoolbus.entity.enums.*;
 import com.schoolbus.exception.BadRequestException;
 import com.schoolbus.exception.ResourceNotFoundException;
 import com.schoolbus.repository.*;
+import com.schoolbus.repository.AttendanceRepository;
 import com.schoolbus.service.DriverService;
 import com.schoolbus.service.LiveTrackingBroker;
 import com.schoolbus.service.NotificationService;
+import com.schoolbus.service.TripEventService;
 import com.schoolbus.util.SecurityUtils;
 import java.time.Instant;
 import java.util.*;
@@ -26,22 +28,26 @@ public class DriverServiceImpl implements DriverService {
     private final TripRepository trips;
     private final TripLocationRepository tripLocations;
     private final RouteStopRepository routeStops;
+    private final AttendanceRepository attendance;
     private final NotificationService notificationService;
     private final LiveTrackingBroker liveTrackingBroker;
+    private final TripEventService tripEventService;
 
     public DriverServiceImpl(DriverRepository drivers, DriverBusRepository driverBuses,
                              StudentBusRepository studentBuses, TripRepository trips,
                              TripLocationRepository tripLocations, RouteStopRepository routeStops,
-                             NotificationService notificationService,
-                             LiveTrackingBroker liveTrackingBroker) {
+                             AttendanceRepository attendance, NotificationService notificationService,
+                             LiveTrackingBroker liveTrackingBroker, TripEventService tripEventService) {
         this.drivers = drivers;
         this.driverBuses = driverBuses;
         this.studentBuses = studentBuses;
         this.trips = trips;
         this.tripLocations = tripLocations;
         this.routeStops = routeStops;
+        this.attendance = attendance;
         this.notificationService = notificationService;
         this.liveTrackingBroker = liveTrackingBroker;
+        this.tripEventService = tripEventService;
     }
 
     private Driver getCurrentDriver() {
@@ -188,6 +194,7 @@ public class DriverServiceImpl implements DriverService {
                     .longitude(request.longitude()).accuracy(request.accuracy()).heading(request.heading())
                     .speed(request.speed()).altitude(request.altitude()).recordedAt(recordedAt).build());
             liveTrackingBroker.broadcast(trip, request, recordedAt);
+            tripEventService.process(trip, request, recordedAt);
         });
     }
 
@@ -308,5 +315,92 @@ public class DriverServiceImpl implements DriverService {
                 .build();
         route.addStop(stop);
         return RouteStopResponse.from(routeStops.save(stop));
+    }
+
+    @Override
+    @Transactional
+    public void markBoarding(Long studentId, boolean present) {
+        Driver driver = getCurrentDriver();
+        Trip trip = currentTrip(driver);
+        StudentBus assignment = studentsFor(assignment(driver)).stream()
+                .filter(sb -> Objects.equals(sb.getStudent().getId(), studentId))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("Student is not assigned to this trip"));
+        recordBoarding(driver, trip, assignment.getStudent(), present, AttendanceMethod.MANUAL);
+    }
+
+    @Override
+    @Transactional
+    public ScanBoardingResponse scanBoarding(String code, String method) {
+        String needle = code == null ? "" : code.trim();
+        if (needle.isEmpty()) {
+            throw new BadRequestException("No code scanned");
+        }
+        Driver driver = getCurrentDriver();
+        Trip trip = currentTrip(driver);
+        Student student = studentsFor(assignment(driver)).stream()
+                .map(StudentBus::getStudent)
+                .filter(s -> matchesCode(s, needle))
+                .findFirst()
+                .orElseThrow(() -> new BadRequestException("No student on this trip matches the scanned code"));
+        AttendanceMethod resolved = parseMethod(method);
+        boolean alreadyBoarded = attendance.existsByTripIdAndStudentIdAndEventType(
+                trip.getId(), student.getId(), AttendanceEventType.BOARDING);
+        if (!alreadyBoarded) {
+            recordBoarding(driver, trip, student, true, resolved);
+        }
+        return new ScanBoardingResponse(student.getId(), student.getFullName(), resolved.name(), alreadyBoarded);
+    }
+
+    private boolean matchesCode(Student student, String code) {
+        return code.equalsIgnoreCase(trimSafe(student.getQrCode()))
+                || code.equalsIgnoreCase(trimSafe(student.getRfidTag()))
+                || code.equalsIgnoreCase(trimSafe(student.getStudentCode()));
+    }
+
+    private static String trimSafe(String value) {
+        return value == null ? "" : value.trim();
+    }
+
+    private static AttendanceMethod parseMethod(String method) {
+        if (method == null) {
+            return AttendanceMethod.MANUAL;
+        }
+        return switch (method.trim().toUpperCase()) {
+            case "QR" -> AttendanceMethod.QR;
+            case "RFID", "NFC" -> AttendanceMethod.RFID;
+            case "FACE" -> AttendanceMethod.FACE;
+            case "FINGERPRINT" -> AttendanceMethod.FINGERPRINT;
+            default -> AttendanceMethod.MANUAL;
+        };
+    }
+
+    private void recordBoarding(Driver driver, Trip trip, Student student, boolean present, AttendanceMethod method) {
+        AttendanceEventType eventType = present ? AttendanceEventType.BOARDING : AttendanceEventType.ABSENT;
+        if (attendance.existsByTripIdAndStudentIdAndEventType(trip.getId(), student.getId(), eventType)) {
+            return;
+        }
+        attendance.save(Attendance.builder()
+                .school(driver.getSchool()).student(student).trip(trip).bus(trip.getBus())
+                .method(method).eventType(eventType).recordedAt(Instant.now())
+                .latitude(driver.getLastLatitude()).longitude(driver.getLastLongitude())
+                .verifiedBy(driver.getUser())
+                .notes(present ? "Boarding via " + method.name() : "Marked absent via " + method.name())
+                .build());
+        if (present) {
+            Integer picked = trip.getStudentsPicked();
+            trip.setStudentsPicked((picked == null ? 0 : picked) + 1);
+            notifyParent(student, NotificationType.STUDENT_PICKED, "Student boarded",
+                    student.getFullName() + " has boarded bus " + trip.getBus().getBusNumber() + ".", trip);
+        }
+    }
+
+    private void notifyParent(Student student, NotificationType type, String title, String body, Trip trip) {
+        Parent parent = student.getParent();
+        if (parent == null) {
+            return;
+        }
+        notificationService.create(trip.getSchool(), parent.getUser(), parent.getFcmToken(), title, body, type,
+                "TRIP", trip.getId(), Map.of("tripId", String.valueOf(trip.getId())));
     }
 }

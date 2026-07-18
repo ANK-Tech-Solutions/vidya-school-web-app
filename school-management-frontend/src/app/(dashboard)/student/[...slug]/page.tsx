@@ -15,6 +15,7 @@ const modules: Record<
   timetable: { title: "Timetable", description: "Your scheduled classes.", endpoint: "/api/v1/student/academic/timetable" },
   homework: { title: "Homework", description: "Assignments from your teachers.", endpoint: "/api/v1/student/academic/homework" },
   exams: { title: "Exams & results", description: "Upcoming exams and published results.", endpoint: "/api/v1/student/academic/exams" },
+  results: { title: "Results", description: "Your published exam results.", endpoint: "/api/v1/student/academic/exam-results" },
   fees: { title: "Fees", description: "Your fee invoices and payment status.", endpoint: "/api/v1/student/academic/fees" },
   notices: { title: "Notice board", description: "School updates and announcements.", endpoint: "/api/v1/student/academic/notices" },
   leave: {

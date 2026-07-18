@@ -148,4 +148,11 @@ export const driverOpsService = {
   activeTrip: async () => mapTrip(await get<Record<string, unknown> | null>("/trips/active")),
   addStop: async (payload: { name: string; latitude: number; longitude: number; address?: string }) =>
     post<Record<string, unknown>>("/route/stops", payload),
+  markBoarded: (studentId: number) => post<void>(`/students/${studentId}/board`, {}),
+  markAbsent: (studentId: number) => post<void>(`/students/${studentId}/absent`, {}),
+  scan: (code: string, method: string) =>
+    post<{ studentId: number; name: string; method: string; alreadyBoarded: boolean }>("/students/scan", {
+      code,
+      method,
+    }),
 };

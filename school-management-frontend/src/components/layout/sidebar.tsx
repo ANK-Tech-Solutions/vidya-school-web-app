@@ -14,6 +14,7 @@ const nav = {
   ],
   ADMIN: [
     { href: "/admin", label: "Overview", icon: Gauge },
+    { href: "/admin/analytics", label: "Analytics", icon: ChartNoAxesCombined },
     { href: "/admin/students", label: "Students", icon: GraduationCap },
     { href: "/admin/parents", label: "Parents", icon: UsersRound },
     { href: "/admin/teachers", label: "Teachers", icon: School },
@@ -27,6 +28,7 @@ const nav = {
     { href: "/admin/notices", label: "Notice Board", icon: Megaphone },
     { href: "/admin/leaves", label: "Leave Approvals", icon: NotebookPen },
     { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
+    { href: "/admin/audit-log", label: "Audit Log", icon: ReceiptText },
     { href: "/admin/settings", label: "Settings", icon: Settings },
   ],
   DRIVER: [
@@ -43,6 +45,7 @@ const nav = {
     { href: "/student/attendance", label: "Attendance", icon: ClipboardCheck },
     { href: "/student/homework", label: "Homework", icon: BookOpen },
     { href: "/student/exams", label: "Exams", icon: FileCheck2 },
+    { href: "/student/results", label: "Results", icon: GraduationCap },
     { href: "/student/fees", label: "Fees", icon: ReceiptText },
     { href: "/student/notices", label: "Notice Board", icon: Megaphone },
     { href: "/student/leave", label: "Leave", icon: NotebookPen },
@@ -56,6 +59,7 @@ const nav = {
     { href: "/student/attendance", label: "Attendance", icon: ClipboardCheck },
     { href: "/student/homework", label: "Homework", icon: BookOpen },
     { href: "/student/exams", label: "Exams", icon: FileCheck2 },
+    { href: "/student/results", label: "Results", icon: GraduationCap },
     { href: "/student/fees", label: "Fees", icon: ReceiptText },
     { href: "/student/notices", label: "Notice Board", icon: Megaphone },
     { href: "/student/leave", label: "Leave", icon: NotebookPen },
@@ -84,6 +88,7 @@ const nav = {
     { href: "/incharge/drivers", label: "Drivers", icon: IdCard },
     { href: "/incharge/assignments", label: "Assignments", icon: Link2 },
     { href: "/incharge/tracking", label: "Live Tracking", icon: MapPinned },
+    { href: "/incharge/replay", label: "Trip Replay", icon: History },
     { href: "/incharge/reports", label: "Reports", icon: ChartNoAxesCombined },
   ],
   STAFF: [

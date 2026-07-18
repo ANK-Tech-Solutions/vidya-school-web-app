@@ -11,6 +11,9 @@ import java.time.Instant;
 
 public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
     Page<Attendance> findByStudentIdOrderByRecordedAtDesc(Long studentId, Pageable pageable);
+
+    boolean existsByTripIdAndStudentIdAndEventType(Long tripId, Long studentId,
+            com.schoolbus.entity.enums.AttendanceEventType eventType);
     @Query("""
             select a from Attendance a
             join fetch a.student left join fetch a.bus left join fetch a.trip

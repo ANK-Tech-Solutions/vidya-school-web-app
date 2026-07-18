@@ -14,6 +14,8 @@ export interface LiveMapProps {
   stops?: RouteTrackStop[];
   currentStopId?: number | null;
   studentStopId?: number | null;
+  /** Ordered GPS breadcrumb path (e.g. for trip replay). */
+  pathPositions?: [number, number][];
   className?: string;
 }
 

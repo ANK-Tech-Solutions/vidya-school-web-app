@@ -113,4 +113,23 @@ public class DriverController {
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Stop added", driverService.addStopFromLocation(request)));
     }
+
+    @PostMapping("/students/{studentId}/board")
+    public ApiResponse<Void> markBoarded(@PathVariable Long studentId) {
+        driverService.markBoarding(studentId, true);
+        return ApiResponse.success("Student marked as boarded", null);
+    }
+
+    @PostMapping("/students/{studentId}/absent")
+    public ApiResponse<Void> markAbsent(@PathVariable Long studentId) {
+        driverService.markBoarding(studentId, false);
+        return ApiResponse.success("Student marked as absent", null);
+    }
+
+    @PostMapping("/students/scan")
+    public ApiResponse<ScanBoardingResponse> scan(@Valid @RequestBody ScanBoardingRequest request) {
+        ScanBoardingResponse result = driverService.scanBoarding(request.code(), request.method());
+        String message = result.alreadyBoarded() ? result.name() + " was already on board" : result.name() + " boarded";
+        return ApiResponse.success(message, result);
+    }
 }
