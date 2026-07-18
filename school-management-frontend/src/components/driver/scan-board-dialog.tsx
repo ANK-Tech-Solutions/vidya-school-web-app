@@ -77,12 +77,11 @@ export function ScanBoardDialog({
       return;
     }
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } },
+        audio: false,
+      });
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        await videoRef.current.play();
-      }
       setCameraOn(true);
       setStatus("Point the camera at the student's QR code.");
     } catch {
@@ -90,15 +89,25 @@ export function ScanBoardDialog({
     }
   }, []);
 
+  // Attach the stream once the <video> is actually mounted (fixes black screen).
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!cameraOn || !video || !streamRef.current) return;
+    video.srcObject = streamRef.current;
+    const played = video.play();
+    if (played) played.catch(() => setStatus("Tap the video to start the camera preview."));
+  }, [cameraOn]);
+
   useEffect(() => {
     if (!cameraOn) return;
     const ctor = (window as unknown as { BarcodeDetector: BarcodeDetectorCtor }).BarcodeDetector;
     const detector = new ctor({ formats: ["qr_code"] });
     let active = true;
     const timer = setInterval(async () => {
-      if (!active || !videoRef.current) return;
+      const video = videoRef.current;
+      if (!active || !video || video.readyState < 2) return;
       try {
-        const results = await detector.detect(videoRef.current);
+        const results = await detector.detect(video);
         if (results.length && results[0].rawValue) {
           active = false;
           stopCamera();
@@ -146,13 +155,14 @@ export function ScanBoardDialog({
   }, [open, stopCamera]);
 
   useEffect(() => {
+    if (!open) return;
     stopCamera();
     nfcAbort.current?.abort();
     nfcAbort.current = null;
     if (method === "QR" && hasBarcodeDetector()) void startCamera();
     if (method === "NFC" && hasNfc()) void startNfc();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [method]);
+  }, [method, open]);
 
   const active = METHODS.find((m) => m.id === method)!;
 
@@ -183,15 +193,21 @@ export function ScanBoardDialog({
       <p className="mt-4 text-sm text-[var(--muted-foreground)]">{active.hint}</p>
 
       {method === "QR" ? (
-        <div className="mt-4 overflow-hidden rounded-2xl border border-[var(--border)] bg-black/80">
-          {cameraOn ? (
-            <video ref={videoRef} className="h-56 w-full object-cover" muted playsInline />
-          ) : (
-            <div className="flex h-56 flex-col items-center justify-center gap-3 text-sm text-white/70">
+        <div className="relative mt-4 h-56 overflow-hidden rounded-2xl border border-[var(--border)] bg-black/80">
+          <video
+            ref={videoRef}
+            className={cn("h-56 w-full object-cover", !cameraOn && "hidden")}
+            muted
+            autoPlay
+            playsInline
+            onClick={() => videoRef.current?.play().catch(() => undefined)}
+          />
+          {!cameraOn ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-sm text-white/70">
               <CameraOff size={26} />
               Camera off
             </div>
-          )}
+          ) : null}
         </div>
       ) : null}
 
